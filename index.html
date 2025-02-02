@@ -3,96 +3,586 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocNet</title>
+    <title>LocNet Auto Parts - ร้านอะไหล่รถยนต์ครบวงจร</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Sarabun', sans-serif;
+        :root {
+            --primary: #2563EB;
+            --secondary: #1E40AF;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --background: #F3F4F6;
+            --text: #1F2937;
+            --light: #F9FAFB;
+            --dark: #111827;
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f0f2f5;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .container {
-            max-width: 800px;
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        /* Header & Navigation */
+        .header {
+            background: var(--light);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .top-bar {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .nav-container {
+            max-width: 1400px;
             margin: 0 auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        h1 {
-            text-align: center;
-            color: #1a73e8;
-            margin-bottom: 30px;
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
         }
 
-        .welcome-section {
-            text-align: center;
-            margin-bottom: 40px;
+        .nav-links {
+            display: flex;
+            gap: 2rem;
         }
 
-        .features {
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .cart-icon {
+            position: relative;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        /* Advanced Search */
+        .advanced-search {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+
+        .search-filters {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
 
-        .feature-card {
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            text-align: center;
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
         }
 
-        .feature-card h3 {
-            color: #1a73e8;
-            margin-bottom: 10px;
+        /* Product Grid with Filters */
+        .product-section {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
         }
 
-        .cta-button {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #1a73e8;
+        .filters-sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            height: fit-content;
+        }
+
+        .filter-category {
+            margin-bottom: 1.5rem;
+        }
+
+        .price-range {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .price-range input {
+            width: 100%;
+        }
+
+        /* Product Cards with Hover Effects */
+        .product-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-actions {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-around;
+            transition: bottom 0.3s;
+        }
+
+        .product-card:hover .product-actions {
+            bottom: 0;
+        }
+
+        .action-button {
             color: white;
             text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .cta-button:hover {
-            background-color: #1557b0;
+        /* User Authentication Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+
+        /* Shopping Cart Sidebar */
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100%;
+            background: white;
+            padding: 2rem;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+            transition: right 0.3s;
+            z-index: 1050;
+        }
+
+        .cart-sidebar.open {
+            right: 0;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        /* Reviews Section */
+        .reviews {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 1rem;
+        }
+
+        .review-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .rating {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer Enhancement */
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 1rem;
+        }
+
+        .footer-section h3 {
+            color: var(--light);
+            margin-bottom: 1rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            color: var(--light);
+            font-size: 1.5rem;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Responsive Enhancements */
+        @media (max-width: 768px) {
+            .product-section {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-sidebar {
+                width: 100%;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ยินดีต้อนรับสู่ LocNet</h1>
-        
-        <div class="welcome-section">
-            <h2>เว็บไซต์ของคุณ พร้อมใช้งานแล้ว!</h2>
-            <p>นี่เป็นหน้าแรกของเว็บไซต์คุณ คุณสามารถปรับแต่งได้ตามต้องการ</p>
+    <header class="header">
+        <div class="top-bar">
+            🔥 โปรโมชั่นพิเศษ: ส่วนลด 20% สำหรับอะไหล่เบรกทุกชิ้น! 
         </div>
+        <nav class="nav-container">
+            <a href="#" class="logo">LocNet Auto Parts</a>
+            <div class="nav-links">
+                <a href="#products">หมวดหมู่สินค้า</a>
+                <a href="#brands">แบรนด์</a>
+                <a href="#services">บริการ</a>
+                <a href="#promotions">โปรโมชั่น</a>
+                <a href="#contact">ติดต่อ</a>
+            </div>
+            <div class="user-actions">
+                <button onclick="openModal()" class="btn-primary">
+                    <i class="fas fa-user"></i> เข้าสู่ระบบ
+                </button>
+                <div class="cart-icon" onclick="toggleCart()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-        <div class="features">
-            <div class="feature-card">
-                <h3>ปรับแต่งง่าย</h3>
-                <p>แก้ไขโค้ด HTML และ CSS เพื่อปรับแต่งดีไซน์ตามที่คุณต้องการ</p>
+    <!-- Authentication Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('login')">เข้าสู่ระบบ</div>
+                <div class="tab" onclick="switchTab('register')">สมัครสมาชิก</div>
             </div>
-            <div class="feature-card">
-                <h3>รองรับทุกอุปกรณ์</h3>
-                <p>แสดงผลได้สวยงามทั้งบนคอมพิวเตอร์ แท็บเล็ต และมือถือ</p>
-            </div>
-            <div class="feature-card">
-                <h3>ฟรี 100%</h3>
-                <p>ใช้งานได้ฟรีตลอดไปด้วย GitHub Pages</p>
-            </div>
-        </div>
-
-        <div style="text-align: center;">
-            <a href="#" class="cta-button">เริ่มต้นใช้งาน</a>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>อีเมล</label>
+                    <input type="email" required>
+                </div>
+                <div class="form-group">
+                    <label>รหัสผ่าน</label>
+                    <input type="password" required>
+                </div>
+                <button type="submit" class="btn-primary">เข้าสู่ระบบ</button>
+            </form>
         </div>
     </div>
+
+    <!-- Shopping Cart Sidebar -->
+    <div id="cartSidebar" class="cart-sidebar">
+        <h2>ตะกร้าสินค้า</h2>
+        <div id="cartItems">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+        <div class="cart-summary">
+            <div class="subtotal">
+                <span>ยอดรวม:</span>
+                <span>฿0.00</span>
+            </div>
+            <button class="btn-primary">ดำเนินการสั่งซื้อ</button>
+        </div>
+    </div>
+
+    <!-- Advanced Search Section -->
+    <section class="search-section">
+        <div class="advanced-search">
+            <h2>ค้นหาอะไหล่</h2>
+            <div class="search-filters">
+                <div class="filter-group">
+                    <select>
+                        <option>เลือกยี่ห้อรถ</option>
+                        <option>Toyota</option>
+                        <option>Honda</option>
+                        <option>Nissan</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select>
+                        <option>เลือกรุ่นรถ</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select>
+                        <option>เลือกปีรถ</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <input type="text" placeholder="ค้นหาด้วยชื่อหรือรหัสสินค้า">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Product Section -->
+    <section class="product-section">
+        <aside class="filters-sidebar">
+            <h3>ตัวกรองสินค้า</h3>
+            <div class="filter-category">
+                <h4>ราคา</h4>
+                <div class="price-range">
+                    <input type="range" min="0" max="50000">
+                </div>
+                <div class="price-values">
+                    <span>฿0</span>
+                    <span>฿50,000</span>
+                </div>
+            </div>
+            <div class="filter-category">
+                <h4>หมวดหมู่</h4>
+                <label><input type="checkbox"> เบรก</label>
+                <label><input type="checkbox"> กรองอากาศ</label>
+                <label><input type="checkbox"> น้ำมันเครื่อง</label>
+            </div>
+           <div class="filter-category">
+                <h4>แบรนด์</h4>
+                <label><input type="checkbox"> Toyota</label>
+                <label><input type="checkbox"> Honda</label>
+                <label><input type="checkbox"> Nissan</label>
+            </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <div class="products-grid">
+            <div class="product-card">
+                <img src="/api/placeholder/300/200" alt="ผ้าเบรกคุณภาพสูง" class="product-image">
+                <div class="product-info">
+                    <h3>ผ้าเบรก Premium</h3>
+                    <p>ผ้าเบรกคุณภาพสูง ให้การเบรกที่นุ่มนวล</p>
+                    <div class="product-price">฿1,500</div>
+                </div>
+                <div class="product-actions">
+                    <a href="#" class="action-button" onclick="addToCart(1)">
+                        <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
+                    </a>
+                    <a href="#" class="action-button">
+                        <i class="fas fa-heart"></i> ถูกใจ
+                    </a>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="/api/placeholder/300/200" alt="ไส้กรองอากาศ" class="product-image">
+                <div class="product-info">
+                    <h3>ไส้กรองอากาศ High Flow</h3>
+                    <p>เพิ่มประสิทธิภาพการกรองและการไหลของอากาศ</p>
+                    <div class="product-price">฿850</div>
+                </div>
+                <div class="product-actions">
+                    <a href="#" class="action-button" onclick="addToCart(2)">
+                        <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
+                    </a>
+                    <a href="#" class="action-button">
+                        <i class="fas fa-heart"></i> ถูกใจ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews">
+        <h2>รีวิวจากลูกค้า</h2>
+        <div class="review-card">
+            <div class="rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+            </div>
+            <p>"สินค้าคุณภาพดีมาก ส่งเร็ว ราคาเป็นมิตร"</p>
+            <small>- คุณสมชาย</small>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>เกี่ยวกับเรา</h3>
+                <p>LocNet Auto Parts ร้านอะไหล่รถยนต์คุณภาพ บริการครบวงจร</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-line"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>ติดต่อเรา</h3>
+                <p><i class="fas fa-map-marker-alt"></i> 123 ถ.รัชดาภิเษก กรุงเทพฯ</p>
+                <p><i class="fas fa-phone"></i> 02-123-4567</p>
+                <p><i class="fas fa-envelope"></i> contact@locnetauto.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>เวลาทำการ</h3>
+                <p>จันทร์ - เสาร์: 8:00 - 18:00</p>
+                <p>อาทิตย์: 9:00 - 15:00</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle authentication modal
+        function openModal() {
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        // Switch between login and register tabs
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Toggle shopping cart
+        function toggleCart() {
+            const cart = document.getElementById('cartSidebar');
+            cart.classList.toggle('open');
+        }
+
+        // Add to cart functionality
+        function addToCart(productId) {
+            const cartCount = document.querySelector('.cart-count');
+            let count = parseInt(cartCount.textContent);
+            cartCount.textContent = count + 1;
+            // Here you would also update the cart items and total
+            alert('เพิ่มสินค้าลงตะกร้าแล้ว');
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('authModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
