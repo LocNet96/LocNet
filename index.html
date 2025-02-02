@@ -1,1094 +1,1245 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocNet Auto Parts - แก้ไขปัญหาแอดมิน/ลบสินค้า/รถเข็น</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #2563EB;
-            --secondary: #1E40AF;
-            --accent: #F59E0B;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --background: #F3F4F6;
-            --text: #1F2937;
-            --light: #F9FAFB;
-            --dark: #111827;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LocNet Auto Parts (ปรับปรุงล่าสุด)</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #1e40af;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --background: #f3f4f6;
+      --text: #1f2937;
+      --light: #f9fafb;
+      --dark: #111827;
+    }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: 'Prompt', sans-serif;
-            background: var(--background);
-            color: var(--text);
-        }
+    body {
+      font-family: 'Prompt', sans-serif;
+      background: var(--background);
+      color: var(--text);
+    }
 
-        /* Header & Navigation */
-        .header {
-            background: var(--light);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-        }
+    /* Header & Navigation */
+    .header {
+      background: var(--light);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+    .top-bar {
+      background: var(--primary);
+      color: white;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .cart-icon {
+      position: relative;
+      cursor: pointer;
+    }
+    .cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+    .btn-primary,
+    .btn-secondary {
+      cursor: pointer;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 0.4rem;
+      font-weight: 500;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--secondary);
+    }
+    .btn-secondary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: var(--warning);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.3rem;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-danger:hover {
+      opacity: 0.8;
+    }
 
-        .top-bar {
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem;
-            text-align: center;
-        }
+    /* Admin button hidden by default */
+    .btn-admin {
+      display: none; /* จะแสดงเมื่อ isAdmin = true */
+    }
 
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .btn-logout {
+      background: var(--danger);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.3rem;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-logout:hover {
+      opacity: 0.8;
+    }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
-        }
+    /* Greeting user (after login) */
+    #userGreeting {
+      margin-right: 1rem;
+      font-weight: 500;
+      color: var(--success);
+    }
 
-        .nav-links {
-            display: flex; gap: 2rem;
-        }
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1100;
+    }
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--danger);
+    }
+    .tabs {
+      display: flex;
+      margin-bottom: 1rem;
+    }
+    .tab {
+      flex: 1;
+      padding: 0.5rem;
+      text-align: center;
+      cursor: pointer;
+    }
+    .tab.active {
+      border-bottom: 2px solid var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+    }
 
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 500;
-            transition: color 0.3s;
-        }
+    /* Admin Panel */
+    .admin-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1200;
+    }
+    .admin-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+    }
+    .close-admin {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--danger);
+    }
 
-        .nav-links a:hover {
-            color: var(--primary);
-        }
+    /* Cart Sidebar */
+    .cart-sidebar {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      height: 100%;
+      background: white;
+      padding: 2rem;
+      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+      transition: right 0.3s;
+      z-index: 1050;
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-sidebar.open {
+      right: 0;
+    }
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .close-cart {
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--danger);
+    }
+    .cart-item {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+    .cart-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+    .cart-summary {
+      margin-top: auto;
+    }
 
-        .user-actions {
-            display: flex; align-items: center; gap: 1rem;
-        }
+    /* Page Layout */
+    .search-section {
+      margin-top: 4.5rem; /* กันส่วน header ทับ */
+    }
+    .advanced-search {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 1200px;
+      margin: 2rem auto;
+    }
+    .search-filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .filter-group select,
+    .filter-group input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+    }
 
-        .cart-icon {
-            position: relative;
-            cursor: pointer;
-        }
+    .product-section {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .filters-sidebar {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      height: fit-content;
+    }
+    .filter-category {
+      margin-bottom: 1.5rem;
+    }
+    .price-range {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .product-card {
+      position: relative;
+      overflow: hidden;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+    }
+    .product-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      border-top-left-radius: 0.5rem;
+      border-top-right-radius: 0.5rem;
+    }
+    .product-info {
+      padding: 1rem;
+    }
+    .product-price {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      color: var(--accent);
+    }
+    .product-actions {
+      position: absolute;
+      bottom: -60px;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 0.5rem;
+      display: flex;
+      justify-content: space-around;
+      transition: bottom 0.3s;
+    }
+    .product-card:hover .product-actions {
+      bottom: 0;
+    }
+    .action-button {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-        .cart-count {
-            position: absolute;
-            top: -8px; right: -8px;
-            background: var(--accent);
-            color: white;
-            border-radius: 50%;
-            width: 20px; height: 20px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.8rem;
-        }
+    .reviews {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 1rem;
+    }
+    .review-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .rating {
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .ai-recommend-section {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .ai-recommend-products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
 
-        .btn-primary, .btn-secondary {
-            cursor: pointer;
-            border: none;
-            padding: 0.6rem 1rem;
-            border-radius: 0.4rem;
-            font-weight: 500;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background: var(--secondary);
-        }
-        .btn-secondary {
-            background: var(--accent);
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: var(--warning);
-        }
+    .footer {
+      background: var(--primary);
+      color: white;
+      margin-top: 2rem;
+    }
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 1rem;
+    }
+    .footer-section h3 {
+      margin-bottom: 1rem;
+    }
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .social-links a {
+      color: white;
+      font-size: 1.5rem;
+      transition: color 0.3s;
+    }
+    .social-links a:hover {
+      color: var(--accent);
+    }
 
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.3rem;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-danger:hover {
-            opacity: 0.8;
-        }
-
-        /* Admin Panel Toggle (Hide by default) */
-        .btn-admin {
-            display: none; /* แสดงเมื่อ isAdmin = true เท่านั้น */
-        }
-
-        /* Search Section */
-        .search-section {
-            margin-top: 4.5rem; /* กันไม่ให้ทับ Header */
-        }
-        .advanced-search {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 1200px;
-            margin: 2rem auto;
-        }
-
-        .search-filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .filter-group select, .filter-group input {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 0.5rem;
-        }
-
-        /* Product Section & Filters */
-        .product-section {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            gap: 2rem;
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        .filters-sidebar {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            height: fit-content;
-        }
-
-        .filter-category {
-            margin-bottom: 1.5rem;
-        }
-        .price-range {
-            display: flex; gap: 1rem; align-items: center;
-        }
-        .price-range input {
-            width: 100%;
-        }
-
-        /* Product Grid */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .product-card {
-            position: relative;
-            overflow: hidden;
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .product-card:hover {
-            transform: translateY(-3px);
-        }
-        .product-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: block;
-            border-top-left-radius: 0.5rem;
-            border-top-right-radius: 0.5rem;
-        }
-        .product-info {
-            padding: 1rem;
-        }
-        .product-price {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
-            color: var(--accent);
-        }
-        .product-actions {
-            position: absolute;
-            bottom: -60px; left: 0; right: 0;
-            background: rgba(0,0,0,0.8);
-            padding: 0.5rem;
-            display: flex;
-            justify-content: space-around;
-            transition: bottom 0.3s;
-        }
-        .product-card:hover .product-actions {
-            bottom: 0;
-        }
-        .action-button {
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Cart Sidebar */
-        .cart-sidebar {
-            position: fixed;
-            top: 0; right: -400px;
-            width: 400px; height: 100%;
-            background: white;
-            padding: 2rem;
-            box-shadow: -2px 0 4px rgba(0,0,0,0.1);
-            transition: right 0.3s;
-            z-index: 1050;
-            display: flex; flex-direction: column;
-        }
-        .cart-sidebar.open {
-            right: 0;
-        }
-        .cart-header {
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .close-cart {
-            cursor: pointer; font-size: 1.2rem; color: var(--danger);
-        }
-
-        .cart-item {
-            display: flex; gap: 1rem;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #ddd;
-        }
-        .cart-item img {
-            width: 80px; height: 80px;
-            object-fit: cover; border-radius: 0.5rem;
-        }
-        .cart-summary {
-            margin-top: auto;
-        }
-
-        /* Authentication Modal */
-        .modal {
-            display: none;
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center; align-items: center;
-            z-index: 1100;
-        }
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            width: 100%; max-width: 400px;
-            position: relative;
-        }
-        .close-modal {
-            position: absolute; top: 1rem; right: 1rem;
-            cursor: pointer; font-size: 1.2rem; color: var(--danger);
-        }
-        .tabs {
-            display: flex; margin-bottom: 1rem;
-        }
-        .tab {
-            flex: 1; padding: 0.5rem; text-align: center; cursor: pointer;
-        }
-        .tab.active {
-            border-bottom: 2px solid var(--primary);
-            color: var(--primary); font-weight: 600;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        .form-group label {
-            display: block; margin-bottom: 0.5rem; font-weight: 500;
-        }
-        .form-group input {
-            width: 100%; padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 0.5rem;
-        }
-
-        /* Admin Panel Modal */
-        .admin-panel {
-            display: none;
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center; align-items: center;
-            z-index: 1200;
-        }
-        .admin-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            width: 100%; max-width: 600px;
-            position: relative;
-        }
-        .close-admin {
-            position: absolute; top: 1rem; right: 1rem;
-            cursor: pointer; font-size: 1.2rem; color: var(--danger);
-        }
-
-        /* Reviews Section */
-        .reviews {
-            max-width: 1200px;
-            margin: 4rem auto; padding: 0 1rem;
-        }
-        .review-card {
-            background: white; padding: 1.5rem;
-            border-radius: 1rem; margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .rating {
-            color: var(--accent); margin-bottom: 0.5rem;
-        }
-
-        /* AI Recommendation Section */
-        .ai-recommend-section {
-            max-width: 1200px; margin: 2rem auto; padding: 0 1rem;
-        }
-        .ai-recommend-products {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        /* Footer */
-        .footer {
-            background: var(--primary);
-            color: white;
-            margin-top: 2rem;
-        }
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 1rem;
-        }
-        .footer-section h3 {
-            margin-bottom: 1rem;
-        }
-        .social-links {
-            display: flex; gap: 1rem; margin-top: 1rem;
-        }
-        .social-links a {
-            color: white; font-size: 1.5rem; transition: color 0.3s;
-        }
-        .social-links a:hover {
-            color: var(--accent);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .product-section {
-                grid-template-columns: 1fr;
-            }
-            .nav-links {
-                display: none; /* แสดง/ซ่อนเมนูเป็น hamburger แทนก็ได้ */
-            }
-            .cart-sidebar {
-                width: 100%;
-            }
-        }
-    </style>
+    @media (max-width: 768px) {
+      .product-section {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        display: none; /* ทำเป็นเมนู Burger ได้ */
+      }
+      .cart-sidebar {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="top-bar">
-            🔥 โปรโมชั่นพิเศษ: ส่วนลด 20% สำหรับอะไหล่เบรกทุกชิ้น!
-        </div>
-        <nav class="nav-container">
-            <a href="#" class="logo">LocNet Auto Parts</a>
-            <div class="nav-links">
-                <a href="#products">หมวดหมู่สินค้า</a>
-                <a href="#brands">แบรนด์</a>
-                <a href="#services">บริการ</a>
-                <a href="#promotions">โปรโมชั่น</a>
-                <a href="#contact">ติดต่อ</a>
-            </div>
-            <div class="user-actions">
-                <button onclick="openModal()" class="btn-primary">
-                    <i class="fas fa-user"></i> เข้าสู่ระบบ
-                </button>
-                <!-- ปุ่ม Admin Panel จะโชว์เฉพาะถ้า isAdmin = true -->
-                <button id="adminBtn" class="btn-secondary btn-admin" onclick="openAdminPanel()">
-                    <i class="fas fa-plus"></i> จัดการสินค้า (Admin)
-                </button>
-                <div class="cart-icon" onclick="toggleCart()">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count">0</span>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Cart Sidebar -->
-    <div id="cartSidebar" class="cart-sidebar">
-        <div class="cart-header">
-            <h2>ตะกร้าสินค้า</h2>
-            <span class="close-cart" onclick="toggleCart()">&times;</span>
-        </div>
-        <div id="cartItems"><!-- ใส่ Cart Items ที่นี่ --></div>
-        <div class="cart-summary">
-            <div class="subtotal">
-                <span>ยอดรวม: </span>
-                <span id="cartTotal">฿0.00</span>
-            </div>
-            <button class="btn-primary" onclick="checkout()">ดำเนินการสั่งซื้อ</button>
-        </div>
+  <!-- Header -->
+  <header class="header">
+    <div class="top-bar">
+      🔥 โปรโมชั่นพิเศษ: ส่วนลด 20% สำหรับอะไหล่เบรกทุกชิ้น!
     </div>
-
-    <!-- Authentication Modal -->
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab(event, 'login')">เข้าสู่ระบบ</div>
-                <div class="tab" onclick="switchTab(event, 'register')">สมัครสมาชิก</div>
-            </div>
-
-            <!-- Login Form -->
-            <form id="loginForm" style="display:block" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label>อีเมล</label>
-                    <input type="email" id="login-email" required>
-                </div>
-                <div class="form-group">
-                    <label>รหัสผ่าน</label>
-                    <input type="password" id="login-password" required>
-                </div>
-                <button type="submit" class="btn-primary">เข้าสู่ระบบ</button>
-            </form>
-
-            <!-- Register Form -->
-            <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
-                <div class="form-group">
-                    <label>ชื่อผู้ใช้</label>
-                    <input type="text" id="reg-username" required>
-                </div>
-                <div class="form-group">
-                    <label>อีเมล</label>
-                    <input type="email" id="reg-email" required>
-                </div>
-                <div class="form-group">
-                    <label>รหัสผ่าน</label>
-                    <input type="password" id="reg-password" required>
-                </div>
-                <div class="form-group">
-                    <label>ยืนยันรหัสผ่าน</label>
-                    <input type="password" id="reg-password-confirm" required>
-                </div>
-                <button type="submit" class="btn-primary">สมัครสมาชิก</button>
-            </form>
+    <nav class="nav-container">
+      <a href="#" class="logo">LocNet Auto Parts</a>
+      <div class="nav-links">
+        <a href="#products">หมวดหมู่สินค้า</a>
+        <a href="#brands">แบรนด์</a>
+        <a href="#services">บริการ</a>
+        <a href="#promotions">โปรโมชั่น</a>
+        <a href="#contact">ติดต่อ</a>
+      </div>
+      <div class="user-actions">
+        <span id="userGreeting"></span>
+        <button id="loginBtn" class="btn-primary" onclick="openModal()">
+          <i class="fas fa-user"></i> เข้าสู่ระบบ
+        </button>
+        <button id="adminBtn" class="btn-secondary btn-admin" onclick="openAdminPanel()">
+          <i class="fas fa-plus"></i> จัดการสินค้า (Admin)
+        </button>
+        <button id="logoutBtn" class="btn-logout" style="display:none" onclick="handleLogout()">
+          ออกจากระบบ
+        </button>
+        <div class="cart-icon" onclick="toggleCart()">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
         </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Shopping Cart Sidebar -->
+  <div id="cartSidebar" class="cart-sidebar">
+    <div class="cart-header">
+      <h2>ตะกร้าสินค้า</h2>
+      <span class="close-cart" onclick="toggleCart()">&times;</span>
     </div>
-
-    <!-- Admin Panel Modal -->
-    <div id="adminPanel" class="admin-panel">
-        <div class="admin-content">
-            <span class="close-admin" onclick="closeAdminPanel()">&times;</span>
-            <h2>เพิ่ม/แก้ไข สินค้าใหม่</h2>
-            <form id="productForm" onsubmit="handleAddProduct(event)">
-                <div class="form-group">
-                    <label>ชื่อสินค้า</label>
-                    <input type="text" id="productName" required>
-                </div>
-                <div class="form-group">
-                    <label>คำอธิบายสินค้า</label>
-                    <textarea id="productDesc" rows="3" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>ราคา (บาท)</label>
-                    <input type="number" id="productPrice" required>
-                </div>
-                <div class="form-group">
-                    <label>อัปโหลดรูปสินค้า</label>
-                    <input type="file" id="productImage" accept="image/*" required>
-                </div>
-                <button type="submit" class="btn-primary">บันทึกสินค้า</button>
-            </form>
-
-            <hr style="margin:2rem 0;">
-            <h3>รายการสินค้า</h3>
-            <div id="adminProductList"><!-- แสดงรายการสินค้า + ปุ่มลบ --></div>
-        </div>
+    <div id="cartItems"><!-- แสดงสินค้าในตะกร้า --></div>
+    <div class="cart-summary">
+      <div class="subtotal">
+        <span>ยอดรวม: </span>
+        <span id="cartTotal">฿0.00</span>
+      </div>
+      <button class="btn-primary" onclick="checkout()">ดำเนินการสั่งซื้อ</button>
     </div>
+  </div>
 
-    <!-- Search Section -->
-    <section class="search-section">
-        <div class="advanced-search">
-            <h2>ค้นหาอะไหล่</h2>
-            <div class="search-filters">
-                <div class="filter-group">
-                    <select>
-                        <option>เลือกยี่ห้อรถ</option>
-                        <option>Toyota</option>
-                        <option>Honda</option>
-                        <option>Nissan</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <select>
-                        <option>เลือกรุ่นรถ</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <select>
-                        <option>เลือกปีรถ</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <input type="text" placeholder="ค้นหาด้วยชื่อหรือรหัสสินค้า">
-                </div>
-            </div>
+  <!-- Authentication Modal -->
+  <div id="authModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal()">&times;</span>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(event, 'login')">เข้าสู่ระบบ</div>
+        <div class="tab" onclick="switchTab(event, 'register')">สมัครสมาชิก</div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" style="display:block" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>อีเมล</label>
+          <input type="email" id="login-email" required />
         </div>
-    </section>
-
-    <!-- Product Section -->
-    <section class="product-section">
-        <aside class="filters-sidebar">
-            <h3>ตัวกรองสินค้า</h3>
-            <div class="filter-category">
-                <h4>ราคา</h4>
-                <div class="price-range">
-                    <input type="range" min="0" max="50000" value="0">
-                </div>
-                <div class="price-values">
-                    <span>฿0</span>
-                    <span>฿50,000</span>
-                </div>
-            </div>
-            <div class="filter-category">
-                <h4>หมวดหมู่</h4>
-                <label><input type="checkbox"> เบรก</label><br>
-                <label><input type="checkbox"> กรองอากาศ</label><br>
-                <label><input type="checkbox"> น้ำมันเครื่อง</label>
-            </div>
-            <div class="filter-category">
-                <h4>แบรนด์</h4>
-                <label><input type="checkbox"> Toyota</label><br>
-                <label><input type="checkbox"> Honda</label><br>
-                <label><input type="checkbox"> Nissan</label>
-            </div>
-        </aside>
-
-        <div class="products-grid" id="productsGrid">
-            <!-- แสดงสินค้าแบบไดนามิกด้วย JS -->
+        <div class="form-group">
+          <label>รหัสผ่าน</label>
+          <input type="password" id="login-password" required />
         </div>
-    </section>
+        <button type="submit" class="btn-primary">เข้าสู่ระบบ</button>
+      </form>
 
-    <!-- AI Recommendation Section -->
-    <section class="ai-recommend-section">
-        <h2>AI แนะนำสินค้าเพิ่มเติมสำหรับคุณ</h2>
-        <div class="ai-recommend-products" id="aiRecommendGrid">
-            <!-- แสดงสินค้าแนะนำจาก AI (Mockup) -->
+      <!-- Register Form -->
+      <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>ชื่อผู้ใช้</label>
+          <input type="text" id="reg-username" required />
         </div>
-    </section>
-
-    <!-- Reviews Section -->
-    <section class="reviews">
-        <h2>รีวิวจากลูกค้า</h2>
-        <div class="review-card">
-            <div class="rating">
-                <i class="fas fa-star"></i> <i class="fas fa-star"></i> 
-                <i class="fas fa-star"></i> <i class="fas fa-star"></i> 
-                <i class="fas fa-star"></i>
-            </div>
-            <p>"สินค้าคุณภาพดีมาก ส่งเร็ว ราคาเป็นมิตร"</p>
-            <small>- คุณสมชาย</small>
+        <div class="form-group">
+          <label>อีเมล</label>
+          <input type="email" id="reg-email" required />
         </div>
-        <div class="review-card">
-            <div class="rating">
-                <i class="fas fa-star"></i> <i class="fas fa-star"></i> 
-                <i class="fas fa-star"></i> <i class="fas fa-star-half-alt"></i> 
-                <i class="far fa-star"></i>
-            </div>
-            <p>"บริการดี แต่บางครั้งตอบช้าหน่อย"</p>
-            <small>- คุณสายรุ้ง</small>
+        <div class="form-group">
+          <label>รหัสผ่าน</label>
+          <input type="password" id="reg-password" required />
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>เกี่ยวกับเรา</h3>
-                <p>LocNet Auto Parts ร้านอะไหล่รถยนต์คุณภาพ บริการครบวงจร</p>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-line"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                </div>
-            </div>
-            <div class="footer-section">
-                <h3>ติดต่อเรา</h3>
-                <p><i class="fas fa-map-marker-alt"></i> 123 ถ.รัชดาภิเษก กรุงเทพฯ</p>
-                <p><i class="fas fa-phone"></i> 02-123-4567</p>
-                <p><i class="fas fa-envelope"></i> contact@locnetauto.com</p>
-            </div>
-            <div class="footer-section">
-                <h3>เวลาทำการ</h3>
-                <p>จันทร์ - เสาร์: 8:00 - 18:00</p>
-                <p>อาทิตย์: 9:00 - 15:00</p>
-            </div>
+        <div class="form-group">
+          <label>ยืนยันรหัสผ่าน</label>
+          <input type="password" id="reg-password-confirm" required />
         </div>
-    </footer>
+        <button type="submit" class="btn-primary">สมัครสมาชิก</button>
+      </form>
+    </div>
+  </div>
 
-    <script>
-        /**********************************************
-         * ============ ตัวอย่างข้อมูลเริ่มต้น ============
-         **********************************************/
-        // ตรวจสอบว่ามี products ใน localStorage แล้วหรือไม่
-        if(!localStorage.getItem('products')) {
-            const initialProducts = [
-                {
-                    id: 1,
-                    name: "ผ้าเบรก Premium",
-                    desc: "ผ้าเบรกคุณภาพสูง ให้การเบรกที่นุ่มนวล",
-                    price: 1500,
-                    image: "/api/placeholder/300/200"
-                },
-                {
-                    id: 2,
-                    name: "ไส้กรองอากาศ High Flow",
-                    desc: "เพิ่มประสิทธิภาพการกรองและการไหลของอากาศ",
-                    price: 850,
-                    image: "/api/placeholder/300/200"
-                }
-            ];
-            localStorage.setItem('products', JSON.stringify(initialProducts));
+  <!-- Admin Panel Modal -->
+  <div id="adminPanel" class="admin-panel">
+    <div class="admin-content">
+      <span class="close-admin" onclick="closeAdminPanel()">&times;</span>
+      <h2 id="adminTitle">เพิ่ม/แก้ไข สินค้า</h2>
+      <!-- ฟอร์มสินค้า ใช้ทั้งเพิ่มและแก้ไข -->
+      <form id="productForm" onsubmit="handleProductSubmit(event)">
+        <input type="hidden" id="editProductId" value="" />
+        <div class="form-group">
+          <label>ชื่อสินค้า</label>
+          <input type="text" id="productName" required />
+        </div>
+        <div class="form-group">
+          <label>คำอธิบายสินค้า</label>
+          <textarea id="productDesc" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>ราคา (บาท)</label>
+          <input type="number" id="productPrice" required />
+        </div>
+        <div class="form-group">
+          <label>อัปโหลดรูปสินค้า (ถ้าไม่เลือกจะใช้รูปเดิม)</label>
+          <input type="file" id="productImage" accept="image/*" />
+        </div>
+        <button type="submit" class="btn-primary" id="productFormBtn">
+          บันทึกสินค้า
+        </button>
+      </form>
+
+      <hr style="margin:2rem 0;" />
+      <h3>รายการสินค้า</h3>
+      <div id="adminProductList"><!-- แสดงรายการสินค้า + ปุ่มแก้ไข/ลบ --></div>
+    </div>
+  </div>
+
+  <!-- Advanced Search Section -->
+  <section class="search-section">
+    <div class="advanced-search">
+      <h2>ค้นหาอะไหล่</h2>
+      <div class="search-filters">
+        <div class="filter-group">
+          <select>
+            <option>เลือกยี่ห้อรถ</option>
+            <option>Toyota</option>
+            <option>Honda</option>
+            <option>Nissan</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <select>
+            <option>เลือกรุ่นรถ</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <select>
+            <option>เลือกปีรถ</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <input type="text" placeholder="ค้นหาด้วยชื่อหรือรหัสสินค้า" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Section -->
+  <section class="product-section">
+    <aside class="filters-sidebar">
+      <h3>ตัวกรองสินค้า</h3>
+      <div class="filter-category">
+        <h4>ราคา</h4>
+        <div class="price-range">
+          <input type="range" min="0" max="50000" value="0" />
+        </div>
+        <div class="price-values">
+          <span>฿0</span>
+          <span>฿50,000</span>
+        </div>
+      </div>
+      <div class="filter-category">
+        <h4>หมวดหมู่</h4>
+        <label><input type="checkbox" /> เบรก</label><br />
+        <label><input type="checkbox" /> กรองอากาศ</label><br />
+        <label><input type="checkbox" /> น้ำมันเครื่อง</label>
+      </div>
+      <div class="filter-category">
+        <h4>แบรนด์</h4>
+        <label><input type="checkbox" /> Toyota</label><br />
+        <label><input type="checkbox" /> Honda</label><br />
+        <label><input type="checkbox" /> Nissan</label>
+      </div>
+    </aside>
+    <div class="products-grid" id="productsGrid"></div>
+  </section>
+
+  <!-- AI Recommendation Section -->
+  <section class="ai-recommend-section">
+    <h2>AI แนะนำสินค้าเพิ่มเติมสำหรับคุณ</h2>
+    <div class="ai-recommend-products" id="aiRecommendGrid"></div>
+  </section>
+
+  <!-- Reviews Section -->
+  <section class="reviews">
+    <h2>รีวิวจากลูกค้า</h2>
+    <div class="review-card">
+      <div class="rating">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+      </div>
+      <p>"สินค้าคุณภาพดีมาก ส่งเร็ว ราคาเป็นมิตร"</p>
+      <small>- คุณสมชาย</small>
+    </div>
+    <div class="review-card">
+      <div class="rating">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star-half-alt"></i>
+        <i class="far fa-star"></i>
+      </div>
+      <p>"บริการดี แต่บางครั้งตอบช้าหน่อย"</p>
+      <small>- คุณสายรุ้ง</small>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>เกี่ยวกับเรา</h3>
+        <p>LocNet Auto Parts ร้านอะไหล่รถยนต์คุณภาพ บริการครบวงจร</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-line"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3>ติดต่อเรา</h3>
+        <p><i class="fas fa-map-marker-alt"></i> 123 ถ.รัชดาภิเษก กรุงเทพฯ</p>
+        <p><i class="fas fa-phone"></i> 02-123-4567</p>
+        <p><i class="fas fa-envelope"></i> contact@locnetauto.com</p>
+      </div>
+      <div class="footer-section">
+        <h3>เวลาทำการ</h3>
+        <p>จันทร์ - เสาร์: 8:00 - 18:00</p>
+        <p>อาทิตย์: 9:00 - 15:00</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /***************************************
+     * ===== ข้อมูลเริ่มต้น (LocalStorage) =====
+     ***************************************/
+    // สร้างข้อมูลสินค้าเริ่มต้น ถ้าไม่มี
+    if (!localStorage.getItem('products')) {
+      const initialProducts = [
+        {
+          id: 1,
+          name: 'ผ้าเบรก Premium',
+          desc: 'ผ้าเบรกคุณภาพสูง ให้การเบรกที่นุ่มนวล',
+          price: 1500,
+          image: '/api/placeholder/300/200',
+        },
+        {
+          id: 2,
+          name: 'ไส้กรองอากาศ High Flow',
+          desc: 'เพิ่มประสิทธิภาพการกรองและการไหลของอากาศ',
+          price: 850,
+          image: '/api/placeholder/300/200',
+        },
+      ];
+      localStorage.setItem('products', JSON.stringify(initialProducts));
+    }
+
+    // สร้าง user (admin) เริ่มต้น ถ้าไม่มี
+    // admin@admin.com / 123456
+    if (!localStorage.getItem('users')) {
+      // ค่านี้คือผลลัพธ์จากฟังก์ชัน simpleHashPassword('123456') 
+      // (ตัวเลข -1933665862 ในรูปแบบ string)
+      const adminHashed = '-1933665862';
+      const defaultUsers = [
+        {
+          username: 'Administrator',
+          email: 'admin@admin.com',
+          password: adminHashed,
+          isAdmin: true,
+        },
+      ];
+      localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
+
+    let cart = []; // เก็บตะกร้า
+
+    /***************************************
+     * ===== ฟังก์ชันทั่วไป (Helper) =====
+     ***************************************/
+    function loadProducts() {
+      return JSON.parse(localStorage.getItem('products'));
+    }
+    function saveProducts(products) {
+      localStorage.setItem('products', JSON.stringify(products));
+    }
+    // ดึง user ปัจจุบันจาก sessionStorage
+    function getCurrentUser() {
+      const data = sessionStorage.getItem('currentUser');
+      return data ? JSON.parse(data) : null;
+    }
+
+    // แฮชรหัสผ่านง่าย ๆ (Demo เท่านั้น)
+    function simpleHashPassword(password) {
+      let hash = 0;
+      for (let i = 0; i < password.length; i++) {
+        const chr = password.charCodeAt(i);
+        hash = (hash << 5) - hash + chr;
+        hash |= 0;
+      }
+      return hash.toString();
+    }
+
+    /***************************************
+     * ===== ระบบสินค้าหน้าเว็บ (User) =====
+     ***************************************/
+    function renderProducts() {
+      const productsGrid = document.getElementById('productsGrid');
+      productsGrid.innerHTML = '';
+      const products = loadProducts();
+      products.forEach((p) => {
+        const card = document.createElement('div');
+        card.classList.add('product-card');
+        card.innerHTML = `
+          <img src="${p.image}" alt="${p.name}" class="product-image">
+          <div class="product-info">
+              <h3>${p.name}</h3>
+              <p>${p.desc}</p>
+              <div class="product-price">฿${p.price}</div>
+          </div>
+          <div class="product-actions">
+              <a href="#" class="action-button" onclick="addToCart(${p.id})">
+                  <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
+              </a>
+              <a href="#" class="action-button">
+                  <i class="fas fa-heart"></i> ถูกใจ
+              </a>
+          </div>
+        `;
+        productsGrid.appendChild(card);
+      });
+    }
+
+    /***************************************
+     * ====== ตะกร้าสินค้า (Cart) =========
+     ***************************************/
+    function toggleCart() {
+      const cartSidebar = document.getElementById('cartSidebar');
+      cartSidebar.classList.toggle('open');
+      renderCartItems();
+    }
+
+    function addToCart(productId) {
+      const products = loadProducts();
+      const product = products.find((p) => p.id === productId);
+      if (product) {
+        const existed = cart.find((item) => item.id === product.id);
+        if (existed) {
+          existed.quantity++;
+        } else {
+          cart.push({ ...product, quantity: 1 });
         }
+        alert('เพิ่มสินค้าลงตะกร้าแล้ว');
+        updateCartCount();
+      }
+    }
 
-        // ผู้ใช้เริ่มต้น (รวม Admin) 
-        // isAdmin = true สำหรับแอดมิน
-        if(!localStorage.getItem('users')) {
-            // ตัวอย่าง admin ใช้ email: admin@admin.com, password: 123456
-            // ทำแฮชง่าย ๆ (เดี๋ยวจะมีฟังก์ชัน simpleHashPassword ด้านล่าง)
-            const adminHashed = "-1933665862"; 
-            // หมายเหตุ: ค่านี้เป็นผลลัพธ์ของการ simpleHashPassword("123456") ในฟังก์ชันด้านล่าง
-            // หรือถ้าอยากเปลี่ยนรหัสผ่าน ก็ไปคำนวณใหม่ได้
-            const defaultUsers = [
-                {
-                    username: "Administrator",
-                    email: "admin@admin.com",
-                    password: adminHashed,
-                    isAdmin: true
-                }
-            ];
-            localStorage.setItem('users', JSON.stringify(defaultUsers));
-        }
+    function renderCartItems() {
+      const cartItemsContainer = document.getElementById('cartItems');
+      cartItemsContainer.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, index) => {
+        const sum = item.price * item.quantity;
+        total += sum;
+        const div = document.createElement('div');
+        div.classList.add('cart-item');
+        div.innerHTML = `
+          <img src="${item.image}" alt="${item.name}">
+          <div>
+              <h4>${item.name}</h4>
+              <p>ราคา: ฿${item.price}</p>
+              <p>จำนวน:
+                  <button onclick="decreaseQuantity(${index})">-</button>
+                  ${item.quantity}
+                  <button onclick="increaseQuantity(${index})">+</button>
+              </p>
+          </div>
+          <div>
+              <p>รวม: ฿${sum}</p>
+              <button style="color:red; border:none; background:none; cursor:pointer;" onclick="removeItem(${index})">ลบ</button>
+          </div>
+        `;
+        cartItemsContainer.appendChild(div);
+      });
+      document.getElementById('cartTotal').textContent = '฿' + total.toFixed(2);
+    }
 
-        // เก็บตะกร้าสินค้าไว้ในตัวแปร (memory)
-        let cart = [];
+    function updateCartCount() {
+      const cartCount = document.querySelector('.cart-count');
+      let qty = 0;
+      cart.forEach((item) => (qty += item.quantity));
+      cartCount.textContent = qty;
+    }
 
-        // ฟังก์ชันโหลดสินค้า
-        function loadProducts() {
-            return JSON.parse(localStorage.getItem('products'));
-        }
-        // ฟังก์ชันบันทึกสินค้า
-        function saveProducts(products) {
-            localStorage.setItem('products', JSON.stringify(products));
-        }
+    function increaseQuantity(index) {
+      cart[index].quantity++;
+      renderCartItems();
+      updateCartCount();
+    }
+    function decreaseQuantity(index) {
+      if (cart[index].quantity > 1) {
+        cart[index].quantity--;
+      }
+      renderCartItems();
+      updateCartCount();
+    }
+    function removeItem(index) {
+      cart.splice(index, 1);
+      renderCartItems();
+      updateCartCount();
+    }
 
-        /**********************************************
-         * =========== แสดงสินค้าในหน้าเว็บ =============
-         **********************************************/
-        function renderProducts() {
-            const productsGrid = document.getElementById('productsGrid');
-            productsGrid.innerHTML = "";
+    function checkout() {
+      if (cart.length === 0) {
+        alert('ตะกร้าสินค้าว่าง');
+        return;
+      }
+      alert('ดำเนินการสั่งซื้อ...');
+      // เชื่อมต่อระบบหลังบ้านสำหรับสร้างออเดอร์จริงได้
+    }
 
-            const products = loadProducts();
-            products.forEach(p => {
-                const card = document.createElement('div');
-                card.classList.add('product-card');
-                card.innerHTML = `
-                    <img src="${p.image}" alt="${p.name}" class="product-image">
-                    <div class="product-info">
-                        <h3>${p.name}</h3>
-                        <p>${p.desc}</p>
-                        <div class="product-price">฿${p.price}</div>
-                    </div>
-                    <div class="product-actions">
-                        <a href="#" class="action-button" onclick="addToCart(${p.id})">
-                            <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
-                        </a>
-                        <a href="#" class="action-button">
-                            <i class="fas fa-heart"></i> ถูกใจ
-                        </a>
-                    </div>
-                `;
-                productsGrid.appendChild(card);
-            });
-        }
+    /***************************************
+     * ====== ระบบสมาชิก (Login/Register) ===
+     ***************************************/
+    function openModal() {
+      document.getElementById('authModal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('authModal').style.display = 'none';
+    }
+    function switchTab(e, tabName) {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach((t) => t.classList.remove('active'));
+      e.target.classList.add('active');
 
-        /**********************************************
-         * ========== Admin Panel: เพิ่ม/ลบสินค้า ==========
-         **********************************************/
-        function openAdminPanel() {
-            // เช็คก่อนว่าล็อกอินเป็น admin หรือยัง
-            const currentUser = getCurrentUser();
-            if(!currentUser || !currentUser.isAdmin) {
-                alert("คุณไม่มีสิทธิ์เข้าถึง Admin Panel");
-                return;
-            }
-            document.getElementById('adminPanel').style.display = 'flex';
-            renderAdminProductList();
-        }
+      document.getElementById('loginForm').style.display =
+        tabName === 'login' ? 'block' : 'none';
+      document.getElementById('registerForm').style.display =
+        tabName === 'register' ? 'block' : 'none';
+    }
 
-        function closeAdminPanel() {
-            document.getElementById('adminPanel').style.display = 'none';
-        }
+    function handleRegister(e) {
+      e.preventDefault();
+      const username = document.getElementById('reg-username').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const passwordConfirm = document.getElementById('reg-password-confirm').value;
 
-        function handleAddProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById('productName').value.trim();
-            const desc = document.getElementById('productDesc').value.trim();
-            const price = document.getElementById('productPrice').value.trim();
-            const imageFile = document.getElementById('productImage').files[0];
+      if (password !== passwordConfirm) {
+        alert('รหัสผ่านไม่ตรงกัน');
+        return;
+      }
+      let users = JSON.parse(localStorage.getItem('users')) || [];
+      if (users.some((u) => u.email === email)) {
+        alert('อีเมลนี้มีอยู่ในระบบแล้ว');
+        return;
+      }
+      const hashed = simpleHashPassword(password);
+      const newUser = {
+        username,
+        email,
+        password: hashed,
+        isAdmin: false,
+      };
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
 
-            if(!imageFile) {
-                alert("กรุณาอัปโหลดรูปสินค้า");
-                return;
-            }
+      // เคลียร์ฟอร์ม + ปิด modal
+      document.getElementById('registerForm').reset();
+      closeModal();
+    }
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64Image = event.target.result;
-                let products = loadProducts();
-                const newId = products.length ? products[products.length - 1].id + 1 : 1;
-                const newProduct = {
-                    id: newId,
-                    name: name,
-                    desc: desc,
-                    price: Number(price),
-                    image: base64Image
-                };
-                products.push(newProduct);
-                saveProducts(products);
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const hashed = simpleHashPassword(password);
 
-                // เคลียร์ฟอร์ม
-                document.getElementById('productForm').reset();
-                alert("เพิ่มสินค้าเรียบร้อย");
-                renderProducts();
-                renderAdminProductList();
-            };
-            reader.readAsDataURL(imageFile);
-        }
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find((u) => u.email === email && u.password === hashed);
+      if (!user) {
+        alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        return;
+      }
 
-        function renderAdminProductList() {
-            const adminListDiv = document.getElementById('adminProductList');
-            adminListDiv.innerHTML = "";
-            const products = loadProducts();
+      // เก็บ user ใน sessionStorage
+      sessionStorage.setItem('currentUser', JSON.stringify(user));
+      alert('เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ' + user.username);
 
-            // สร้างตารางแสดงสินค้า
-            const table = document.createElement('table');
-            table.style.width = '100%';
-            table.style.borderCollapse = 'collapse';
+      // เคลียร์ฟอร์ม
+      document.getElementById('loginForm').reset();
+      closeModal();
+      updateUIAfterLogin(user);
+    }
 
-            // หัวตาราง
-            table.innerHTML = `
-                <thead>
-                    <tr style="background:#f0f0f0">
-                        <th style="padding:8px; text-align:left;">#</th>
-                        <th style="padding:8px; text-align:left;">สินค้า</th>
-                        <th style="padding:8px; text-align:left;">ราคา</th>
-                        <th style="padding:8px; text-align:left;">ลบ</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTableBody"></tbody>
-            `;
-            adminListDiv.appendChild(table);
+    function updateUIAfterLogin(user) {
+      // ถ้าเป็น admin โชว์ปุ่ม Admin
+      if (user.isAdmin) {
+        document.getElementById('adminBtn').style.display = 'inline-block';
+      } else {
+        document.getElementById('adminBtn').style.display = 'none';
+      }
+      // โชว์ปุ่ม Logout
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+      // ซ่อนปุ่ม login
+      document.getElementById('loginBtn').style.display = 'none';
+      // แสดงข้อความทักทาย
+      const userGreeting = document.getElementById('userGreeting');
+      userGreeting.textContent = `ยินดีต้อนรับ, ${user.username}`;
+    }
 
-            const tbody = document.getElementById('adminTableBody');
-            products.forEach((p, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="padding:8px;">${p.id}</td>
-                    <td style="padding:8px;">
-                        <strong>${p.name}</strong><br>
-                        <small>${p.desc}</small>
-                    </td>
-                    <td style="padding:8px;">฿${p.price}</td>
-                    <td style="padding:8px;">
-                        <button class="btn-danger" onclick="deleteProduct(${p.id})">ลบ</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+    function handleLogout() {
+      sessionStorage.removeItem('currentUser');
+      // เคลียร์ ui
+      document.getElementById('adminBtn').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('loginBtn').style.display = 'inline-block';
+      document.getElementById('userGreeting').textContent = '';
+      alert('ออกจากระบบเรียบร้อย');
+    }
 
-        function deleteProduct(productId) {
-            if(!confirm("คุณต้องการลบสินค้านี้หรือไม่?")) return;
-            let products = loadProducts();
-            products = products.filter(p => p.id !== productId);
-            saveProducts(products);
-            alert("ลบสินค้าเรียบร้อย");
-            renderProducts();
-            renderAdminProductList();
-        }
+    /***************************************
+     * =========== Admin Panel =============
+     ***************************************/
+    let editingProductId = null;
 
-        /**********************************************
-         * ============= ตะกร้าสินค้า (Cart) =============
-         **********************************************/
-        function toggleCart() {
-            const cartSidebar = document.getElementById('cartSidebar');
-            cartSidebar.classList.toggle('open');
-            renderCartItems();
-        }
+    function openAdminPanel() {
+      const currentUser = getCurrentUser();
+      if (!currentUser || !currentUser.isAdmin) {
+        alert('คุณไม่มีสิทธิ์เข้าถึง Admin Panel');
+        return;
+      }
+      document.getElementById('adminPanel').style.display = 'flex';
+      // เคลียร์ฟอร์มก่อน
+      document.getElementById('productForm').reset();
+      document.getElementById('editProductId').value = '';
+      document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
+      document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
+      editingProductId = null;
+      renderAdminProductList();
+    }
 
-        function addToCart(productId) {
-            const products = loadProducts();
-            const product = products.find(p => p.id === productId);
-            if(product) {
-                // เช็คว่ามีอยู่แล้วหรือยัง
-                const exist = cart.find(item => item.id === product.id);
-                if(exist) {
-                    exist.quantity++;
-                } else {
-                    cart.push({...product, quantity: 1});
-                }
-                alert("เพิ่มสินค้าลงตะกร้าแล้ว");
-                updateCartCount();
-            }
-        }
+    function closeAdminPanel() {
+      document.getElementById('adminPanel').style.display = 'none';
+    }
 
-        function renderCartItems() {
-            const cartItemsContainer = document.getElementById('cartItems');
-            cartItemsContainer.innerHTML = "";
-            let total = 0;
+    // แสดงรายการสินค้าในหน้าแอดมิน
+    function renderAdminProductList() {
+      const adminListDiv = document.getElementById('adminProductList');
+      adminListDiv.innerHTML = '';
+      const products = loadProducts();
 
-            cart.forEach((item, index) => {
-                const sumPrice = item.price * item.quantity;
-                total += sumPrice;
-                const itemDiv = document.createElement('div');
-                itemDiv.classList.add('cart-item');
-                itemDiv.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}">
-                    <div>
-                        <h4>${item.name}</h4>
-                        <p>ราคา: ฿${item.price}</p>
-                        <p>จำนวน: 
-                            <button onclick="decreaseQuantity(${index})">-</button>
-                            ${item.quantity}
-                            <button onclick="increaseQuantity(${index})">+</button>
-                        </p>
-                    </div>
-                    <div>
-                        <p>รวม: ฿${sumPrice}</p>
-                        <button style="color:red; border:none; background:none; cursor:pointer;" onclick="removeItem(${index})">ลบ</button>
-                    </div>
-                `;
-                cartItemsContainer.appendChild(itemDiv);
-            });
-            document.getElementById('cartTotal').textContent = "฿" + total.toFixed(2);
-        }
+      const table = document.createElement('table');
+      table.style.width = '100%';
+      table.style.borderCollapse = 'collapse';
+      table.innerHTML = `
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th style="padding:8px; text-align:left;">ID</th>
+            <th style="padding:8px; text-align:left;">สินค้า</th>
+            <th style="padding:8px; text-align:left;">ราคา</th>
+            <th style="padding:8px; text-align:left;">แก้ไข</th>
+            <th style="padding:8px; text-align:left;">ลบ</th>
+          </tr>
+        </thead>
+        <tbody id="adminTableBody"></tbody>
+      `;
+      adminListDiv.appendChild(table);
 
-        function updateCartCount() {
-            const cartCount = document.querySelector('.cart-count');
-            let totalQty = 0;
-            cart.forEach(item => { totalQty += item.quantity; });
-            cartCount.textContent = totalQty;
-        }
+      const tbody = document.getElementById('adminTableBody');
+      products.forEach((p) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="padding:8px;">${p.id}</td>
+          <td style="padding:8px;">
+            <strong>${p.name}</strong><br/>
+            <small>${p.desc}</small>
+          </td>
+          <td style="padding:8px;">฿${p.price}</td>
+          <td style="padding:8px;">
+            <button class="btn-secondary" onclick="editProduct(${p.id})">แก้ไข</button>
+          </td>
+          <td style="padding:8px;">
+            <button class="btn-danger" onclick="deleteProduct(${p.id})">ลบ</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
 
-        function increaseQuantity(index) {
-            cart[index].quantity++;
-            renderCartItems();
-            updateCartCount();
-        }
+    // กดปุ่มแก้ไข
+    function editProduct(id) {
+      const products = loadProducts();
+      const product = products.find((p) => p.id === id);
+      if (!product) return;
+      // เตรียมฟอร์มสำหรับแก้ไข
+      document.getElementById('editProductId').value = product.id;
+      document.getElementById('productName').value = product.name;
+      document.getElementById('productDesc').value = product.desc;
+      document.getElementById('productPrice').value = product.price;
+      document.getElementById('adminTitle').textContent = 'แก้ไขสินค้า';
+      document.getElementById('productFormBtn').textContent = 'บันทึกการแก้ไข';
+      editingProductId = product.id;
+    }
 
-        function decreaseQuantity(index) {
-            if(cart[index].quantity > 1) {
-                cart[index].quantity--;
-            }
-            renderCartItems();
-            updateCartCount();
-        }
+    // ฟอร์ม submit (เพิ่มหรือแก้ไข)
+    function handleProductSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('productName').value.trim();
+      const desc = document.getElementById('productDesc').value.trim();
+      const price = document.getElementById('productPrice').value.trim();
+      const imageFile = document.getElementById('productImage').files[0];
 
-        function removeItem(index) {
-            cart.splice(index, 1);
-            renderCartItems();
-            updateCartCount();
-        }
+      let products = loadProducts();
 
-        function checkout() {
-            if(cart.length === 0) {
-                alert("ตะกร้าสินค้าว่าง");
-                return;
-            }
-            alert("ดำเนินการสั่งซื้อ...");
-            // ตรงนี้สามารถเชื่อมต่อ API/ระบบหลังบ้านเพื่อสร้างคำสั่งซื้อจริงได้
-        }
+      // หากไม่มีการเลือกไฟล์ จะไม่เปลี่ยนรูป
+      if (editingProductId) {
+        // แก้ไขสินค้า
+        const idx = products.findIndex((p) => p.id === editingProductId);
+        if (idx === -1) return;
+        const oldImage = products[idx].image;
 
-        /**********************************************
-         * =========== ระบบสมาชิก (Login/Register) =======
-         **********************************************/
-        function openModal() {
-            document.getElementById('authModal').style.display = 'flex';
-        }
-        function closeModal() {
-            document.getElementById('authModal').style.display = 'none';
-        }
-        function switchTab(event, tabName) {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-
-            document.getElementById('loginForm').style.display = (tabName === 'login') ? 'block' : 'none';
-            document.getElementById('registerForm').style.display = (tabName === 'register') ? 'block' : 'none';
-        }
-
-        // แฮชรหัสผ่านอย่างง่าย (Demo)
-        function simpleHashPassword(password) {
-            let hash = 0;
-            for (let i = 0; i < password.length; i++) {
-                const chr = password.charCodeAt(i);
-                hash = ((hash << 5) - hash) + chr;
-                hash |= 0;
-            }
-            return hash.toString();
-        }
-
-        // ดึง user ปัจจุบันจาก sessionStorage (ถ้าล็อกอินแล้ว)
-        function getCurrentUser() {
-            const currentUserJSON = sessionStorage.getItem('currentUser');
-            if(!currentUserJSON) return null;
-            return JSON.parse(currentUserJSON);
-        }
-
-        function handleRegister(e) {
-            e.preventDefault();
-            const username = document.getElementById('reg-username').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const password = document.getElementById('reg-password').value;
-            const passwordConfirm = document.getElementById('reg-password-confirm').value;
-
-            if(password !== passwordConfirm) {
-                alert("รหัสผ่านไม่ตรงกัน");
-                return;
-            }
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-            // เช็ค email ซ้ำ
-            if(users.some(u => u.email === email)) {
-                alert("อีเมลนี้ถูกใช้แล้ว");
-                return;
-            }
-            const hashed = simpleHashPassword(password);
-            const newUser = {
-                username,
-                email,
-                password: hashed,
-                isAdmin: false
-            };
-            users.push(newUser);
-            localStorage.setItem('users', JSON.stringify(users));
-            alert("สมัครสมาชิกเรียบร้อย! กรุณาเข้าสู่ระบบ");
-            closeModal();
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-            const hashed = simpleHashPassword(password);
-
-            const user = users.find(u => u.email === email && u.password === hashed);
-            if(!user) {
-                alert("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
-                return;
-            }
-
-            // เก็บ user ไว้ใน sessionStorage เพื่อจำว่าใครล็อกอิน
-            sessionStorage.setItem('currentUser', JSON.stringify(user));
-            alert("เข้าสู่ระบบสำเร็จ! สวัสดีคุณ " + user.username);
-
-            // ถ้าเป็น Admin ก็โชว์ปุ่ม Admin
-            if(user.isAdmin) {
-                document.getElementById('adminBtn').style.display = 'inline-block';
-            }
-
-            closeModal();
-        }
-
-        /**********************************************
-         * ===== AI Recommendation (Mockup / สุ่ม) =====
-         **********************************************/
-        function getAIRecommendations() {
-            const products = loadProducts();
-            if(products.length === 0) return [];
-            const shuffled = [...products].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, 2); // แนะนำ 2 ชิ้นแบบสุ่ม
-        }
-
-        function renderAIRecommendations() {
-            const aiGrid = document.getElementById('aiRecommendGrid');
-            aiGrid.innerHTML = "";
-
-            const recs = getAIRecommendations();
-            recs.forEach(p => {
-                const card = document.createElement('div');
-                card.classList.add('product-card');
-                card.innerHTML = `
-                    <img src="${p.image}" alt="${p.name}" class="product-image">
-                    <div class="product-info">
-                        <h3>${p.name}</h3>
-                        <p>${p.desc}</p>
-                        <div class="product-price">฿${p.price}</div>
-                    </div>
-                    <div class="product-actions">
-                        <a href="#" class="action-button" onclick="addToCart(${p.id})">
-                            <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
-                        </a>
-                        <a href="#" class="action-button">
-                            <i class="fas fa-heart"></i> ถูกใจ
-                        </a>
-                    </div>
-                `;
-                aiGrid.appendChild(card);
-            });
-        }
-
-        /**********************************************
-         * =============== onLoad ======================
-         **********************************************/
-        window.onload = function() {
-            // ถ้ามีคนล็อกอินไว้ ให้เช็คแล้วโชว์ปุ่ม Admin ถ้าเป็น admin
-            const currentUser = getCurrentUser();
-            if(currentUser && currentUser.isAdmin) {
-                document.getElementById('adminBtn').style.display = 'inline-block';
-            }
-
-            renderProducts();
-            renderAIRecommendations();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64Image = event.target.result;
+          products[idx].name = name;
+          products[idx].desc = desc;
+          products[idx].price = Number(price);
+          products[idx].image = imageFile ? base64Image : oldImage; // ถ้าไม่อัปโหลดใหม่ก็ใช้รูปเดิม
+          saveProducts(products);
+          alert('แก้ไขสินค้าเรียบร้อย');
+          renderProducts();
+          renderAdminProductList();
+          document.getElementById('productForm').reset();
+          // reset UI form
+          document.getElementById('editProductId').value = '';
+          document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
+          document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
+          editingProductId = null;
         };
-
-        // ปิด Modal เมื่อคลิกนอกกรอบ
-        window.onclick = function(e) {
-            const authModal = document.getElementById('authModal');
-            const adminModal = document.getElementById('adminPanel');
-            if(e.target === authModal) closeModal();
-            if(e.target === adminModal) closeAdminPanel();
+        if (imageFile) {
+          reader.readAsDataURL(imageFile);
+        } else {
+          // กรณีไม่มีไฟล์ภาพใหม่
+          products[idx].name = name;
+          products[idx].desc = desc;
+          products[idx].price = Number(price);
+          saveProducts(products);
+          alert('แก้ไขสินค้าเรียบร้อย');
+          renderProducts();
+          renderAdminProductList();
+          document.getElementById('productForm').reset();
+          // reset UI form
+          document.getElementById('editProductId').value = '';
+          document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
+          document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
+          editingProductId = null;
         }
-    </script>
+      } else {
+        // เพิ่มสินค้าใหม่
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64Image = event.target.result;
+          const newId = products.length
+            ? products[products.length - 1].id + 1
+            : 1;
+          const newProduct = {
+            id: newId,
+            name,
+            desc,
+            price: Number(price),
+            image: base64Image,
+          };
+          products.push(newProduct);
+          saveProducts(products);
+          alert('เพิ่มสินค้าเรียบร้อย');
+          renderProducts();
+          renderAdminProductList();
+          document.getElementById('productForm').reset();
+        };
+        if (imageFile) {
+          reader.readAsDataURL(imageFile);
+        } else {
+          alert('กรุณาอัปโหลดรูปสินค้า');
+        }
+      }
+    }
+
+    function deleteProduct(id) {
+      if (!confirm('คุณต้องการลบสินค้านี้หรือไม่?')) return;
+      let products = loadProducts();
+      products = products.filter((p) => p.id !== id);
+      saveProducts(products);
+      alert('ลบสินค้าเรียบร้อย');
+      renderProducts();
+      renderAdminProductList();
+    }
+
+    /***************************************
+     * ===== AI Recommendation (Mockup) ===
+     ***************************************/
+    function getAIRecommendations() {
+      const products = loadProducts();
+      if (products.length === 0) return [];
+      const shuffled = [...products].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 2); // แนะนำ 2 ชิ้น (สุ่ม)
+    }
+    function renderAIRecommendations() {
+      const aiGrid = document.getElementById('aiRecommendGrid');
+      aiGrid.innerHTML = '';
+      const recs = getAIRecommendations();
+      recs.forEach((p) => {
+        const card = document.createElement('div');
+        card.classList.add('product-card');
+        card.innerHTML = `
+          <img src="${p.image}" alt="${p.name}" class="product-image">
+          <div class="product-info">
+              <h3>${p.name}</h3>
+              <p>${p.desc}</p>
+              <div class="product-price">฿${p.price}</div>
+          </div>
+          <div class="product-actions">
+              <a href="#" class="action-button" onclick="addToCart(${p.id})">
+                  <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
+              </a>
+              <a href="#" class="action-button">
+                  <i class="fas fa-heart"></i> ถูกใจ
+              </a>
+          </div>
+        `;
+        aiGrid.appendChild(card);
+      });
+    }
+
+    /***************************************
+     * ============ onLoad ================
+     ***************************************/
+    window.onload = () => {
+      // ดูว่ามี user ล็อกอินค้างอยู่ไหม
+      const user = getCurrentUser();
+      if (user) {
+        updateUIAfterLogin(user);
+      }
+      renderProducts();
+      renderAIRecommendations();
+    };
+
+    // ปิด Modal เมื่อคลิกนอกกรอบ
+    window.onclick = (e) => {
+      const authModal = document.getElementById('authModal');
+      const adminPanel = document.getElementById('adminPanel');
+      if (e.target === authModal) closeModal();
+      if (e.target === adminPanel) closeAdminPanel();
+    };
+  </script>
 </body>
 </html>
