@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LocNet Auto Parts (ปรับปรุงล่าสุด)</title>
+  <title>LocNet Auto Parts (Admin Login แยก)</title>
   <link
     href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
@@ -103,6 +103,7 @@
       justify-content: center;
       font-size: 0.8rem;
     }
+
     .btn-primary,
     .btn-secondary {
       cursor: pointer;
@@ -137,11 +138,10 @@
       opacity: 0.8;
     }
 
-    /* Admin button hidden by default */
+    /* ปุ่มที่เราจะโชว์เมื่อ Admin Login สำเร็จ */
     .btn-admin {
-      display: none; /* จะแสดงเมื่อ isAdmin = true */
+      display: none; /* เมื่อเป็น admin เราจะโชว์ (updateUIAfterLogin) */
     }
-
     .btn-logout {
       background: var(--danger);
       color: white;
@@ -154,7 +154,7 @@
       opacity: 0.8;
     }
 
-    /* Greeting user (after login) */
+    /* แสดงชื่อ user หลัง Login */
     #userGreeting {
       margin-right: 1rem;
       font-weight: 500;
@@ -213,8 +213,7 @@
       margin-bottom: 0.5rem;
       font-weight: 500;
     }
-    .form-group input,
-    .form-group textarea {
+    .form-group input {
       width: 100%;
       padding: 0.5rem;
       border: 1px solid #ddd;
@@ -296,7 +295,7 @@
       margin-top: auto;
     }
 
-    /* Page Layout */
+    /* Layout sections */
     .search-section {
       margin-top: 4.5rem; /* กันส่วน header ทับ */
     }
@@ -308,20 +307,6 @@
       max-width: 1200px;
       margin: 2rem auto;
     }
-    .search-filters {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    .filter-group select,
-    .filter-group input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 0.5rem;
-    }
-
     .product-section {
       display: grid;
       grid-template-columns: 250px 1fr;
@@ -335,14 +320,6 @@
       padding: 1.5rem;
       border-radius: 1rem;
       height: fit-content;
-    }
-    .filter-category {
-      margin-bottom: 1.5rem;
-    }
-    .price-range {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
     }
     .products-grid {
       display: grid;
@@ -398,7 +375,6 @@
       align-items: center;
       gap: 0.5rem;
     }
-
     .reviews {
       max-width: 1200px;
       margin: 4rem auto;
@@ -425,7 +401,6 @@
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 1.5rem;
     }
-
     .footer {
       background: var(--primary);
       color: white;
@@ -484,17 +459,32 @@
         <a href="#promotions">โปรโมชั่น</a>
         <a href="#contact">ติดต่อ</a>
       </div>
+
+      <!-- User Actions -->
       <div class="user-actions">
         <span id="userGreeting"></span>
-        <button id="loginBtn" class="btn-primary" onclick="openModal()">
-          <i class="fas fa-user"></i> เข้าสู่ระบบ
+
+        <!-- ปุ่มเข้าสู่ระบบสมาชิก -->
+        <button id="memberLoginBtn" class="btn-primary" onclick="openMemberLoginModal()">
+          <i class="fas fa-user"></i> เข้าสู่ระบบสมาชิก
         </button>
+
+        <!-- ปุ่มเข้าสู่ระบบแอดมิน (จะ pre-fill อีเมล admin@admin.com ให้) -->
+        <button id="adminLoginBtn" class="btn-secondary" onclick="openAdminLoginModal()">
+          <i class="fas fa-user-shield"></i> เข้าสู่ระบบแอดมิน
+        </button>
+
+        <!-- ปุ่ม admin panel จะแสดงหลัง login เป็น admin สำเร็จ -->
         <button id="adminBtn" class="btn-secondary btn-admin" onclick="openAdminPanel()">
-          <i class="fas fa-plus"></i> จัดการสินค้า (Admin)
+          <i class="fas fa-cog"></i> จัดการสินค้า (Admin)
         </button>
+
+        <!-- ปุ่มออกจากระบบ -->
         <button id="logoutBtn" class="btn-logout" style="display:none" onclick="handleLogout()">
           ออกจากระบบ
         </button>
+
+        <!-- Icon ตะกร้าสินค้า -->
         <div class="cart-icon" onclick="toggleCart()">
           <i class="fas fa-shopping-cart"></i>
           <span class="cart-count">0</span>
@@ -503,13 +493,13 @@
     </nav>
   </header>
 
-  <!-- Shopping Cart Sidebar -->
+  <!-- Cart Sidebar -->
   <div id="cartSidebar" class="cart-sidebar">
     <div class="cart-header">
       <h2>ตะกร้าสินค้า</h2>
       <span class="close-cart" onclick="toggleCart()">&times;</span>
     </div>
-    <div id="cartItems"><!-- แสดงสินค้าในตะกร้า --></div>
+    <div id="cartItems"></div>
     <div class="cart-summary">
       <div class="subtotal">
         <span>ยอดรวม: </span>
@@ -519,7 +509,7 @@
     </div>
   </div>
 
-  <!-- Authentication Modal -->
+  <!-- Authentication Modal (เดียว ใช้ได้ทั้ง Member และ Admin) -->
   <div id="authModal" class="modal">
     <div class="modal-content">
       <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -569,7 +559,6 @@
     <div class="admin-content">
       <span class="close-admin" onclick="closeAdminPanel()">&times;</span>
       <h2 id="adminTitle">เพิ่ม/แก้ไข สินค้า</h2>
-      <!-- ฟอร์มสินค้า ใช้ทั้งเพิ่มและแก้ไข -->
       <form id="productForm" onsubmit="handleProductSubmit(event)">
         <input type="hidden" id="editProductId" value="" />
         <div class="form-group">
@@ -592,10 +581,9 @@
           บันทึกสินค้า
         </button>
       </form>
-
-      <hr style="margin:2rem 0;" />
+      <hr />
       <h3>รายการสินค้า</h3>
-      <div id="adminProductList"><!-- แสดงรายการสินค้า + ปุ่มแก้ไข/ลบ --></div>
+      <div id="adminProductList"></div>
     </div>
   </div>
 
@@ -603,6 +591,7 @@
   <section class="search-section">
     <div class="advanced-search">
       <h2>ค้นหาอะไหล่</h2>
+      <!-- ฟอร์มค้นหา (ตัวอย่าง) -->
       <div class="search-filters">
         <div class="filter-group">
           <select>
@@ -719,9 +708,9 @@
   </footer>
 
   <script>
-    /***************************************
-     * ===== ข้อมูลเริ่มต้น (LocalStorage) =====
-     ***************************************/
+    /*******************************************
+     * ========== ข้อมูลเริ่มต้น ==============
+     ******************************************/
     // สร้างข้อมูลสินค้าเริ่มต้น ถ้าไม่มี
     if (!localStorage.getItem('products')) {
       const initialProducts = [
@@ -730,54 +719,51 @@
           name: 'ผ้าเบรก Premium',
           desc: 'ผ้าเบรกคุณภาพสูง ให้การเบรกที่นุ่มนวล',
           price: 1500,
-          image: '/api/placeholder/300/200',
+          image: '/api/placeholder/300/200'
         },
         {
           id: 2,
           name: 'ไส้กรองอากาศ High Flow',
           desc: 'เพิ่มประสิทธิภาพการกรองและการไหลของอากาศ',
           price: 850,
-          image: '/api/placeholder/300/200',
-        },
+          image: '/api/placeholder/300/200'
+        }
       ];
       localStorage.setItem('products', JSON.stringify(initialProducts));
     }
 
-    // สร้าง user (admin) เริ่มต้น ถ้าไม่มี
+    // สร้าง user admin ถ้าไม่มี
     // admin@admin.com / 123456
     if (!localStorage.getItem('users')) {
-      // ค่านี้คือผลลัพธ์จากฟังก์ชัน simpleHashPassword('123456') 
-      // (ตัวเลข -1933665862 ในรูปแบบ string)
-      const adminHashed = '-1933665862';
+      const adminHashed = '-1933665862'; // ผลลัพธ์จาก simpleHashPassword('123456')
       const defaultUsers = [
         {
           username: 'Administrator',
           email: 'admin@admin.com',
           password: adminHashed,
-          isAdmin: true,
-        },
+          isAdmin: true
+        }
       ];
       localStorage.setItem('users', JSON.stringify(defaultUsers));
     }
 
-    let cart = []; // เก็บตะกร้า
+    // ตะกร้าสินค้า (หน่วยความจำชั่วคราวในหน้านี้)
+    let cart = [];
 
-    /***************************************
-     * ===== ฟังก์ชันทั่วไป (Helper) =====
-     ***************************************/
+    /*******************************************
+     * =========== ฟังก์ชันทั่วไป =============
+     ******************************************/
     function loadProducts() {
       return JSON.parse(localStorage.getItem('products'));
     }
     function saveProducts(products) {
       localStorage.setItem('products', JSON.stringify(products));
     }
-    // ดึง user ปัจจุบันจาก sessionStorage
     function getCurrentUser() {
-      const data = sessionStorage.getItem('currentUser');
-      return data ? JSON.parse(data) : null;
+      const userData = sessionStorage.getItem('currentUser');
+      return userData ? JSON.parse(userData) : null;
     }
-
-    // แฮชรหัสผ่านง่าย ๆ (Demo เท่านั้น)
+    // แฮชรหัสผ่านง่าย ๆ (DEMO เท่านั้น)
     function simpleHashPassword(password) {
       let hash = 0;
       for (let i = 0; i < password.length; i++) {
@@ -788,12 +774,12 @@
       return hash.toString();
     }
 
-    /***************************************
-     * ===== ระบบสินค้าหน้าเว็บ (User) =====
-     ***************************************/
+    /*******************************************
+     * ========= จัดการสินค้า (User view) ======
+     ******************************************/
     function renderProducts() {
-      const productsGrid = document.getElementById('productsGrid');
-      productsGrid.innerHTML = '';
+      const container = document.getElementById('productsGrid');
+      container.innerHTML = '';
       const products = loadProducts();
       products.forEach((p) => {
         const card = document.createElement('div');
@@ -814,19 +800,18 @@
               </a>
           </div>
         `;
-        productsGrid.appendChild(card);
+        container.appendChild(card);
       });
     }
 
-    /***************************************
-     * ====== ตะกร้าสินค้า (Cart) =========
-     ***************************************/
+    /*******************************************
+     * =========== ตะกร้าสินค้า (Cart) =========
+     ******************************************/
     function toggleCart() {
       const cartSidebar = document.getElementById('cartSidebar');
       cartSidebar.classList.toggle('open');
       renderCartItems();
     }
-
     function addToCart(productId) {
       const products = loadProducts();
       const product = products.find((p) => p.id === productId);
@@ -841,12 +826,11 @@
         updateCartCount();
       }
     }
-
     function renderCartItems() {
-      const cartItemsContainer = document.getElementById('cartItems');
-      cartItemsContainer.innerHTML = '';
+      const cartItemsDiv = document.getElementById('cartItems');
+      cartItemsDiv.innerHTML = '';
       let total = 0;
-      cart.forEach((item, index) => {
+      cart.forEach((item, idx) => {
         const sum = item.price * item.quantity;
         total += sum;
         const div = document.createElement('div');
@@ -857,28 +841,27 @@
               <h4>${item.name}</h4>
               <p>ราคา: ฿${item.price}</p>
               <p>จำนวน:
-                  <button onclick="decreaseQuantity(${index})">-</button>
+                  <button onclick="decreaseQuantity(${idx})">-</button>
                   ${item.quantity}
-                  <button onclick="increaseQuantity(${index})">+</button>
+                  <button onclick="increaseQuantity(${idx})">+</button>
               </p>
           </div>
           <div>
               <p>รวม: ฿${sum}</p>
-              <button style="color:red; border:none; background:none; cursor:pointer;" onclick="removeItem(${index})">ลบ</button>
+              <button style="color:red; border:none; background:none; cursor:pointer;" 
+                onclick="removeItem(${idx})">ลบ</button>
           </div>
         `;
-        cartItemsContainer.appendChild(div);
+        cartItemsDiv.appendChild(div);
       });
       document.getElementById('cartTotal').textContent = '฿' + total.toFixed(2);
     }
-
     function updateCartCount() {
       const cartCount = document.querySelector('.cart-count');
       let qty = 0;
       cart.forEach((item) => (qty += item.quantity));
       cartCount.textContent = qty;
     }
-
     function increaseQuantity(index) {
       cart[index].quantity++;
       renderCartItems();
@@ -896,19 +879,18 @@
       renderCartItems();
       updateCartCount();
     }
-
     function checkout() {
       if (cart.length === 0) {
         alert('ตะกร้าสินค้าว่าง');
         return;
       }
       alert('ดำเนินการสั่งซื้อ...');
-      // เชื่อมต่อระบบหลังบ้านสำหรับสร้างออเดอร์จริงได้
+      // เชื่อมต่อระบบหลังบ้านจริงได้
     }
 
-    /***************************************
-     * ====== ระบบสมาชิก (Login/Register) ===
-     ***************************************/
+    /*******************************************
+     * ========== ระบบสมาชิก (Login) ==========
+     ******************************************/
     function openModal() {
       document.getElementById('authModal').style.display = 'flex';
     }
@@ -926,36 +908,20 @@
         tabName === 'register' ? 'block' : 'none';
     }
 
-    function handleRegister(e) {
-      e.preventDefault();
-      const username = document.getElementById('reg-username').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value;
-      const passwordConfirm = document.getElementById('reg-password-confirm').value;
-
-      if (password !== passwordConfirm) {
-        alert('รหัสผ่านไม่ตรงกัน');
-        return;
-      }
-      let users = JSON.parse(localStorage.getItem('users')) || [];
-      if (users.some((u) => u.email === email)) {
-        alert('อีเมลนี้มีอยู่ในระบบแล้ว');
-        return;
-      }
-      const hashed = simpleHashPassword(password);
-      const newUser = {
-        username,
-        email,
-        password: hashed,
-        isAdmin: false,
-      };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
-
-      // เคลียร์ฟอร์ม + ปิด modal
-      document.getElementById('registerForm').reset();
-      closeModal();
+    // แยกปุ่ม 2 อัน: memberLogin กับ adminLogin
+    function openMemberLoginModal() {
+      openModal();
+      // เคลียร์ form
+      document.getElementById('loginForm').reset();
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+    }
+    function openAdminLoginModal() {
+      openModal();
+      // ใส่อีเมล admin@admin.com ให้เลย (ผู้ใช้จะใส่รหัสเอง)
+      document.getElementById('loginForm').reset();
+      document.getElementById('login-email').value = 'admin@admin.com';
+      document.getElementById('login-password').value = '';
     }
 
     function handleLogin(e) {
@@ -970,56 +936,89 @@
         alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
         return;
       }
-
-      // เก็บ user ใน sessionStorage
+      // เก็บ user ใน session
       sessionStorage.setItem('currentUser', JSON.stringify(user));
       alert('เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ' + user.username);
 
       // เคลียร์ฟอร์ม
-      document.getElementById('loginForm').reset();
+      e.target.reset();
       closeModal();
       updateUIAfterLogin(user);
     }
 
+    function handleRegister(e) {
+      e.preventDefault();
+      const username = document.getElementById('reg-username').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const pass = document.getElementById('reg-password').value;
+      const pass2 = document.getElementById('reg-password-confirm').value;
+
+      if (pass !== pass2) {
+        alert('รหัสผ่านไม่ตรงกัน');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      if (users.some((u) => u.email === email)) {
+        alert('อีเมลนี้มีอยู่ในระบบแล้ว');
+        return;
+      }
+      const hashed = simpleHashPassword(pass);
+      const newUser = {
+        username,
+        email,
+        password: hashed,
+        isAdmin: false
+      };
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+
+      // เคลียร์ฟอร์ม + ปิด modal
+      e.target.reset();
+      closeModal();
+    }
+
     function updateUIAfterLogin(user) {
-      // ถ้าเป็น admin โชว์ปุ่ม Admin
+      // ถ้าเป็น admin -> โชว์ปุ่ม admin
       if (user.isAdmin) {
         document.getElementById('adminBtn').style.display = 'inline-block';
       } else {
         document.getElementById('adminBtn').style.display = 'none';
       }
-      // โชว์ปุ่ม Logout
-      document.getElementById('logoutBtn').style.display = 'inline-block';
       // ซ่อนปุ่ม login
-      document.getElementById('loginBtn').style.display = 'none';
-      // แสดงข้อความทักทาย
-      const userGreeting = document.getElementById('userGreeting');
-      userGreeting.textContent = `ยินดีต้อนรับ, ${user.username}`;
+      document.getElementById('memberLoginBtn').style.display = 'none';
+      document.getElementById('adminLoginBtn').style.display = 'none';
+      // โชว์ปุ่ม logout
+      document.getElementById('logoutBtn').style.display = 'inline-block';
+      // แสดงข้อความต้อนรับ
+      document.getElementById('userGreeting').textContent = `ยินดีต้อนรับ, ${user.username}`;
     }
 
     function handleLogout() {
       sessionStorage.removeItem('currentUser');
-      // เคลียร์ ui
+      alert('ออกจากระบบเรียบร้อย');
+      // คืนค่า UI
       document.getElementById('adminBtn').style.display = 'none';
       document.getElementById('logoutBtn').style.display = 'none';
-      document.getElementById('loginBtn').style.display = 'inline-block';
+      document.getElementById('memberLoginBtn').style.display = 'inline-block';
+      document.getElementById('adminLoginBtn').style.display = 'inline-block';
       document.getElementById('userGreeting').textContent = '';
-      alert('ออกจากระบบเรียบร้อย');
     }
 
-    /***************************************
-     * =========== Admin Panel =============
-     ***************************************/
+    /*******************************************
+     * =========== Admin Panel ================
+     ******************************************/
     let editingProductId = null;
 
     function openAdminPanel() {
-      const currentUser = getCurrentUser();
-      if (!currentUser || !currentUser.isAdmin) {
+      const user = getCurrentUser();
+      if (!user || !user.isAdmin) {
         alert('คุณไม่มีสิทธิ์เข้าถึง Admin Panel');
         return;
       }
       document.getElementById('adminPanel').style.display = 'flex';
-      // เคลียร์ฟอร์มก่อน
+      // เคลียร์ฟอร์ม
       document.getElementById('productForm').reset();
       document.getElementById('editProductId').value = '';
       document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
@@ -1027,38 +1026,34 @@
       editingProductId = null;
       renderAdminProductList();
     }
-
     function closeAdminPanel() {
       document.getElementById('adminPanel').style.display = 'none';
     }
 
-    // แสดงรายการสินค้าในหน้าแอดมิน
     function renderAdminProductList() {
-      const adminListDiv = document.getElementById('adminProductList');
-      adminListDiv.innerHTML = '';
+      const adminList = document.getElementById('adminProductList');
+      adminList.innerHTML = '';
       const products = loadProducts();
-
       const table = document.createElement('table');
       table.style.width = '100%';
       table.style.borderCollapse = 'collapse';
       table.innerHTML = `
         <thead>
-          <tr style="background:#f0f0f0;">
-            <th style="padding:8px; text-align:left;">ID</th>
-            <th style="padding:8px; text-align:left;">สินค้า</th>
-            <th style="padding:8px; text-align:left;">ราคา</th>
-            <th style="padding:8px; text-align:left;">แก้ไข</th>
-            <th style="padding:8px; text-align:left;">ลบ</th>
+          <tr style="background:#f0f0f0">
+            <th style="padding:8px;">ID</th>
+            <th style="padding:8px;">สินค้า</th>
+            <th style="padding:8px;">ราคา</th>
+            <th style="padding:8px;">แก้ไข</th>
+            <th style="padding:8px;">ลบ</th>
           </tr>
         </thead>
         <tbody id="adminTableBody"></tbody>
       `;
-      adminListDiv.appendChild(table);
-
+      adminList.appendChild(table);
       const tbody = document.getElementById('adminTableBody');
       products.forEach((p) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
           <td style="padding:8px;">${p.id}</td>
           <td style="padding:8px;">
             <strong>${p.name}</strong><br/>
@@ -1072,26 +1067,23 @@
             <button class="btn-danger" onclick="deleteProduct(${p.id})">ลบ</button>
           </td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(tr);
       });
     }
 
-    // กดปุ่มแก้ไข
-    function editProduct(id) {
+    function editProduct(productId) {
       const products = loadProducts();
-      const product = products.find((p) => p.id === id);
-      if (!product) return;
-      // เตรียมฟอร์มสำหรับแก้ไข
-      document.getElementById('editProductId').value = product.id;
-      document.getElementById('productName').value = product.name;
-      document.getElementById('productDesc').value = product.desc;
-      document.getElementById('productPrice').value = product.price;
+      const p = products.find((x) => x.id === productId);
+      if (!p) return;
+      editingProductId = p.id;
+      document.getElementById('editProductId').value = p.id;
+      document.getElementById('productName').value = p.name;
+      document.getElementById('productDesc').value = p.desc;
+      document.getElementById('productPrice').value = p.price;
       document.getElementById('adminTitle').textContent = 'แก้ไขสินค้า';
       document.getElementById('productFormBtn').textContent = 'บันทึกการแก้ไข';
-      editingProductId = product.id;
     }
 
-    // ฟอร์ม submit (เพิ่มหรือแก้ไข)
     function handleProductSubmit(e) {
       e.preventDefault();
       const name = document.getElementById('productName').value.trim();
@@ -1101,35 +1093,31 @@
 
       let products = loadProducts();
 
-      // หากไม่มีการเลือกไฟล์ จะไม่เปลี่ยนรูป
       if (editingProductId) {
-        // แก้ไขสินค้า
+        // แก้ไขสินค้าเดิม
         const idx = products.findIndex((p) => p.id === editingProductId);
         if (idx === -1) return;
         const oldImage = products[idx].image;
-
         const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64Image = event.target.result;
+        reader.onload = (evt) => {
+          const base64Image = evt.target.result;
           products[idx].name = name;
           products[idx].desc = desc;
           products[idx].price = Number(price);
-          products[idx].image = imageFile ? base64Image : oldImage; // ถ้าไม่อัปโหลดใหม่ก็ใช้รูปเดิม
+          products[idx].image = imageFile ? base64Image : oldImage;
           saveProducts(products);
           alert('แก้ไขสินค้าเรียบร้อย');
           renderProducts();
           renderAdminProductList();
-          document.getElementById('productForm').reset();
-          // reset UI form
-          document.getElementById('editProductId').value = '';
+          e.target.reset();
+          editingProductId = null;
           document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
           document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
-          editingProductId = null;
         };
         if (imageFile) {
           reader.readAsDataURL(imageFile);
         } else {
-          // กรณีไม่มีไฟล์ภาพใหม่
+          // ไม่มีไฟล์ใหม่
           products[idx].name = name;
           products[idx].desc = desc;
           products[idx].price = Number(price);
@@ -1137,65 +1125,61 @@
           alert('แก้ไขสินค้าเรียบร้อย');
           renderProducts();
           renderAdminProductList();
-          document.getElementById('productForm').reset();
-          // reset UI form
-          document.getElementById('editProductId').value = '';
+          e.target.reset();
+          editingProductId = null;
           document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
           document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
-          editingProductId = null;
         }
       } else {
         // เพิ่มสินค้าใหม่
+        if (!imageFile) {
+          alert('กรุณาอัปโหลดรูปสินค้า');
+          return;
+        }
         const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64Image = event.target.result;
-          const newId = products.length
-            ? products[products.length - 1].id + 1
-            : 1;
+        reader.onload = (evt) => {
+          const base64Image = evt.target.result;
+          const newId = products.length ? products[products.length - 1].id + 1 : 1;
           const newProduct = {
             id: newId,
             name,
             desc,
             price: Number(price),
-            image: base64Image,
+            image: base64Image
           };
           products.push(newProduct);
           saveProducts(products);
           alert('เพิ่มสินค้าเรียบร้อย');
           renderProducts();
           renderAdminProductList();
-          document.getElementById('productForm').reset();
+          e.target.reset();
         };
-        if (imageFile) {
-          reader.readAsDataURL(imageFile);
-        } else {
-          alert('กรุณาอัปโหลดรูปสินค้า');
-        }
+        reader.readAsDataURL(imageFile);
       }
     }
 
-    function deleteProduct(id) {
+    function deleteProduct(productId) {
       if (!confirm('คุณต้องการลบสินค้านี้หรือไม่?')) return;
       let products = loadProducts();
-      products = products.filter((p) => p.id !== id);
+      products = products.filter((p) => p.id !== productId);
       saveProducts(products);
       alert('ลบสินค้าเรียบร้อย');
       renderProducts();
       renderAdminProductList();
     }
 
-    /***************************************
-     * ===== AI Recommendation (Mockup) ===
-     ***************************************/
+    /*******************************************
+     * ========== AI Recommendation ===========
+     ******************************************/
     function getAIRecommendations() {
       const products = loadProducts();
-      if (products.length === 0) return [];
+      if (!products.length) return [];
       const shuffled = [...products].sort(() => 0.5 - Math.random());
       return shuffled.slice(0, 2); // แนะนำ 2 ชิ้น (สุ่ม)
     }
     function renderAIRecommendations() {
-      const aiGrid = document.getElementById('aiRecommendGrid');
-      aiGrid.innerHTML = '';
+      const grid = document.getElementById('aiRecommendGrid');
+      grid.innerHTML = '';
       const recs = getAIRecommendations();
       recs.forEach((p) => {
         const card = document.createElement('div');
@@ -1203,28 +1187,27 @@
         card.innerHTML = `
           <img src="${p.image}" alt="${p.name}" class="product-image">
           <div class="product-info">
-              <h3>${p.name}</h3>
-              <p>${p.desc}</p>
-              <div class="product-price">฿${p.price}</div>
+            <h3>${p.name}</h3>
+            <p>${p.desc}</p>
+            <div class="product-price">฿${p.price}</div>
           </div>
           <div class="product-actions">
-              <a href="#" class="action-button" onclick="addToCart(${p.id})">
-                  <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
-              </a>
-              <a href="#" class="action-button">
-                  <i class="fas fa-heart"></i> ถูกใจ
-              </a>
+            <a href="#" class="action-button" onclick="addToCart(${p.id})">
+              <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
+            </a>
+            <a href="#" class="action-button">
+              <i class="fas fa-heart"></i> ถูกใจ
+            </a>
           </div>
         `;
-        aiGrid.appendChild(card);
+        grid.appendChild(card);
       });
     }
 
-    /***************************************
-     * ============ onLoad ================
-     ***************************************/
-    window.onload = () => {
-      // ดูว่ามี user ล็อกอินค้างอยู่ไหม
+    /*******************************************
+     * =============== onLoad =================
+     ******************************************/
+    window.onload = function () {
       const user = getCurrentUser();
       if (user) {
         updateUIAfterLogin(user);
@@ -1234,7 +1217,7 @@
     };
 
     // ปิด Modal เมื่อคลิกนอกกรอบ
-    window.onclick = (e) => {
+    window.onclick = function (e) {
       const authModal = document.getElementById('authModal');
       const adminPanel = document.getElementById('adminPanel');
       if (e.target === authModal) closeModal();
