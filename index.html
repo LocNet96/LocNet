@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LocNet Auto Parts (ใช้รหัส 2934 สำหรับ Admin)</title>
+  <title>LocNet Auto Parts (ใช้รหัส  สำหรับ Admin)</title>
   <!-- Preconnect for faster font loading -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -432,7 +432,7 @@
       users.push(newUser);
       localStorage.setItem('users', JSON.stringify(users));
       alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
-      e.target.reset();
+      document.getElementById('registerForm').reset();
       closeModal();
     }
     function handleLogin(e) {
