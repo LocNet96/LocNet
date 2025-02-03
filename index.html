@@ -412,29 +412,49 @@
       document.getElementById('loginForm').style.display = (tabName === 'login') ? 'block' : 'none';
       document.getElementById('registerForm').style.display = (tabName === 'register') ? 'block' : 'none';
     }
-    function handleRegister(e) {
-      e.preventDefault();
-      const username = document.getElementById('reg-username').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const pass = document.getElementById('reg-password').value;
-      const pass2 = document.getElementById('reg-password-confirm').value;
-      if(pass !== pass2) {
-        alert('รหัสผ่านไม่ตรงกัน');
-        return;
-      }
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      if(users.some(u => u.email === email)) {
-        alert('อีเมลนี้มีอยู่ในระบบแล้ว').reset();
-        return;
-      }
-      const hashed = simpleHashPassword(pass);
-      const newUser = { username, email, password: hashed };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
-      e.target.reset();
-      closeModal();
-    }
+function handleRegister(e) {
+  e.preventDefault();
+
+  // ดึงค่าจาก input
+  const usernameEl = document.getElementById('reg-username');
+  const emailEl = document.getElementById('reg-email');
+  const passwordEl = document.getElementById('reg-password');
+  const passwordConfirmEl = document.getElementById('reg-password-confirm');
+
+  const username = usernameEl.value.trim();
+  const email = emailEl.value.trim();
+  const pass = passwordEl.value;
+  const pass2 = passwordConfirmEl.value;
+
+  if (pass !== pass2) {
+    alert('รหัสผ่านไม่ตรงกัน');
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('users')) || [];
+
+  // เช็คว่าอีเมลมีอยู่ในระบบแล้วหรือไม่
+  if (users.some(u => u.email === email)) {
+    alert('อีเมลนี้มีอยู่ในระบบแล้ว');
+    return;
+  }
+
+  const hashed = simpleHashPassword(pass);
+  const newUser = { username, email, password: hashed };
+  users.push(newUser);
+  localStorage.setItem('users', JSON.stringify(users));
+
+  alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+
+  // ล้างข้อมูลใน input ด้วยตนเอง
+  usernameEl.value = "";
+  emailEl.value = "";
+  passwordEl.value = "";
+  passwordConfirmEl.value = "";
+
+  closeModal();
+}
+
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim();
