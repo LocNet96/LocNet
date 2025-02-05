@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LocNet Auto Parts (ใช้รหัส  สำหรับ Admin)</title>
+  <title>LocNet Auto Parts (ใช้รหัส สำหรับ Admin)</title>
   <!-- Preconnect for faster font loading -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- ใช้ฟอนต์ Prompt อยู่แล้ว แต่สามารถเปลี่ยนหรือเพิ่มได้ตามต้องการ -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* Optimized and Minified CSS */
+    /* CSS Variables & Global Styles */
     :root {
       --primary: #2563EB;
       --secondary: #1E40AF;
@@ -22,33 +23,85 @@
       --text: #1F2937;
       --light: #F9FAFB;
       --dark: #111827;
+      --transition-speed: 0.3s;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Prompt', sans-serif; background: var(--background); color: var(--text); }
+    body { 
+      font-family: 'Prompt', sans-serif; 
+      background: var(--background); 
+      color: var(--text); 
+      line-height: 1.6;
+      transition: background var(--transition-speed), color var(--transition-speed);
+    }
+    /* Dark Mode Overrides */
+    body.dark-mode {
+      background: #121212;
+      color: #e0e0e0;
+    }
+    body.dark-mode .header,
+    body.dark-mode .footer,
+    body.dark-mode .modal-content {
+      background: #1e1e1e;
+    }
+    body.dark-mode .nav-links a,
+    body.dark-mode .product-info h3,
+    body.dark-mode .product-info p {
+      color: #e0e0e0;
+    }
     /* Header & Navigation */
-    .header { background: var(--light); box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 1000; }
+    .header { 
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+      position: fixed; 
+      width: 100%; 
+      top: 0; 
+      z-index: 1000; 
+      padding-bottom: 0.5rem;
+    }
     .top-bar { background: var(--primary); color: white; padding: 0.5rem; text-align: center; }
     .nav-container { max-width: 1400px; margin: 0 auto; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: var(--light); text-decoration: none; }
     .nav-links { display: flex; gap: 2rem; }
-    .nav-links a { text-decoration: none; color: var(--text); font-weight: 500; transition: color 0.3s; }
-    .nav-links a:hover { color: var(--primary); }
+    .nav-links a { text-decoration: none; color: var(--light); font-weight: 500; transition: color var(--transition-speed); }
+    .nav-links a:hover { color: var(--accent); }
     .user-actions { display: flex; align-items: center; gap: 1rem; }
+    .user-actions button { transition: background var(--transition-speed), color var(--transition-speed); }
     .cart-icon { position: relative; cursor: pointer; }
     .cart-count { position: absolute; top: -8px; right: -8px; background: var(--accent); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
-    .btn-primary, .btn-secondary { cursor: pointer; border: none; padding: 0.6rem 1rem; border-radius: 0.4rem; font-weight: 500; }
+    .btn-primary, .btn-secondary { cursor: pointer; border: none; padding: 0.6rem 1rem; border-radius: 0.4rem; font-weight: 500; transition: background var(--transition-speed); }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--secondary); }
     .btn-secondary { background: var(--accent); color: white; }
     .btn-secondary:hover { background: var(--warning); }
-    .btn-danger { background: var(--danger); color: white; padding: 0.4rem 0.8rem; border-radius: 0.3rem; border: none; cursor: pointer; }
-    .btn-danger:hover { opacity: 0.8; }
-    .btn-logout { background: var(--danger); color: white; padding: 0.4rem 0.8rem; border-radius: 0.3rem; border: none; cursor: pointer; }
-    .btn-logout:hover { opacity: 0.8; }
+    .btn-danger, .btn-logout { background: var(--danger); color: white; padding: 0.4rem 0.8rem; border-radius: 0.3rem; border: none; cursor: pointer; transition: opacity var(--transition-speed); }
+    .btn-danger:hover, .btn-logout:hover { opacity: 0.8; }
     #userGreeting { margin-right: 1rem; font-weight: 500; color: var(--success); }
     /* Modals */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1100; }
-    .modal-content { background: white; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 400px; position: relative; }
+    .modal { 
+      display: none; 
+      position: fixed; 
+      top: 0; left: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.5); 
+      justify-content: center; 
+      align-items: center; 
+      z-index: 1100; 
+      animation: fadeIn var(--transition-speed);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+    .modal-content { 
+      background: white; 
+      padding: 2rem; 
+      border-radius: 1rem; 
+      width: 100%; 
+      max-width: 400px; 
+      position: relative; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .modal-content.product-detail { max-width: 600px; }
     .close-modal { position: absolute; top: 1rem; right: 1rem; cursor: pointer; font-size: 1.2rem; color: var(--danger); }
     .tabs { display: flex; margin-bottom: 1rem; }
     .tab { flex: 1; padding: 0.5rem; text-align: center; cursor: pointer; }
@@ -61,7 +114,7 @@
     .admin-content { background: white; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 600px; position: relative; }
     .close-admin { position: absolute; top: 1rem; right: 1rem; cursor: pointer; font-size: 1.2rem; color: var(--danger); }
     /* Cart Sidebar */
-    .cart-sidebar { position: fixed; top: 0; right: -400px; width: 400px; height: 100%; background: white; padding: 2rem; box-shadow: -2px 0 4px rgba(0,0,0,0.1); transition: right 0.3s; z-index: 1050; display: flex; flex-direction: column; }
+    .cart-sidebar { position: fixed; top: 0; right: -400px; width: 400px; height: 100%; background: white; padding: 2rem; box-shadow: -2px 0 4px rgba(0,0,0,0.1); transition: right var(--transition-speed); z-index: 1050; display: flex; flex-direction: column; }
     .cart-sidebar.open { right: 0; }
     .cart-header { display: flex; justify-content: space-between; align-items: center; }
     .close-cart { cursor: pointer; font-size: 1.2rem; color: var(--danger); }
@@ -79,14 +132,19 @@
     .filter-category { margin-bottom: 1.5rem; }
     .price-range { display: flex; gap: 1rem; align-items: center; }
     .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
-    .product-card { position: relative; overflow: hidden; background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s; }
+    .product-card { position: relative; overflow: hidden; background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform var(--transition-speed); }
     .product-card:hover { transform: translateY(-3px); }
-    .product-image { width: 100%; height: 200px; object-fit: cover; display: block; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
+    .product-image { width: 100%; height: 200px; object-fit: cover; display: block; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; cursor: pointer; }
     .product-info { padding: 1rem; }
     .product-price { font-size: 1.2rem; font-weight: 600; margin-top: 0.5rem; color: var(--accent); }
-    .product-actions { position: absolute; bottom: -60px; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 0.5rem; display: flex; justify-content: space-around; transition: bottom 0.3s; }
+    .product-actions { position: absolute; bottom: -80px; left: 0; right: 0; background: rgba(0,0,0,0.8); padding: 0.5rem; display: flex; justify-content: space-around; transition: bottom var(--transition-speed); }
     .product-card:hover .product-actions { bottom: 0; }
-    .action-button { color: white; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .action-button { color: white; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .action-button:hover { opacity: 0.8; }
+    /* กำหนดสไตล์ให้ปุ่มถูกใจ เมื่อถูกเลือก */
+    .action-button.action-like.liked {
+      color: var(--danger);
+    }
     /* Reviews & AI Recommendations */
     .reviews { max-width: 1200px; margin: 4rem auto; padding: 0 1rem; }
     .review-card { background: white; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -98,7 +156,7 @@
     .footer-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 4rem 1rem; }
     .footer-section h3 { margin-bottom: 1rem; }
     .social-links { display: flex; gap: 1rem; margin-top: 1rem; }
-    .social-links a { color: white; font-size: 1.5rem; transition: color 0.3s; }
+    .social-links a { color: white; font-size: 1.5rem; transition: color var(--transition-speed); }
     .social-links a:hover { color: var(--accent); }
     @media (max-width: 768px) {
       .product-section { grid-template-columns: 1fr; }
@@ -132,6 +190,9 @@
         </button>
         <button id="adminBtn" class="btn-secondary" onclick="openAdminPanel()">
           <i class="fas fa-lock"></i> จัดการสินค้า (Admin)
+        </button>
+        <button id="themeToggle" class="btn-secondary" onclick="toggleTheme()">
+          <i class="fas fa-adjust"></i> โหมดมืด
         </button>
         <div class="cart-icon" onclick="toggleCart()">
           <i class="fas fa-shopping-cart"></i>
@@ -233,6 +294,18 @@
     </div>
   </div>
 
+  <!-- Product Detail Modal -->
+  <div id="productDetailModal" class="modal">
+    <div class="modal-content product-detail">
+      <span class="close-modal" onclick="closeProductDetail()">&times;</span>
+      <img id="detailImage" src="" alt="" style="width:100%; border-radius:0.5rem; margin-bottom:1rem;">
+      <h3 id="detailName"></h3>
+      <p id="detailDesc"></p>
+      <div class="product-price" id="detailPrice"></div>
+      <button class="btn-primary" id="addToCartFromDetail">เพิ่มลงตะกร้า</button>
+    </div>
+  </div>
+
   <!-- Advanced Search Section -->
   <section class="search-section">
     <div class="advanced-search">
@@ -264,7 +337,7 @@
   </section>
 
   <!-- Product Section -->
-  <section class="product-section">
+  <section class="product-section" id="products">
     <aside class="filters-sidebar">
       <h3>ตัวกรองสินค้า</h3>
       <div class="filter-category">
@@ -371,6 +444,9 @@
     if(!localStorage.getItem('users')) {
       localStorage.setItem('users', JSON.stringify([]));
     }
+    if(!localStorage.getItem('wishlist')) {
+      localStorage.setItem('wishlist', JSON.stringify([]));
+    }
     let cart = [];
 
     /****************************************************
@@ -412,49 +488,44 @@
       document.getElementById('loginForm').style.display = (tabName === 'login') ? 'block' : 'none';
       document.getElementById('registerForm').style.display = (tabName === 'register') ? 'block' : 'none';
     }
-function handleRegister(e) {
-  e.preventDefault();
+    function handleRegister(e) {
+      e.preventDefault();
 
-  // ดึงค่าจาก input
-  const usernameEl = document.getElementById('reg-username');
-  const emailEl = document.getElementById('reg-email');
-  const passwordEl = document.getElementById('reg-password');
-  const passwordConfirmEl = document.getElementById('reg-password-confirm');
+      const usernameEl = document.getElementById('reg-username');
+      const emailEl = document.getElementById('reg-email');
+      const passwordEl = document.getElementById('reg-password');
+      const passwordConfirmEl = document.getElementById('reg-password-confirm');
 
-  const username = usernameEl.value.trim();
-  const email = emailEl.value.trim();
-  const pass = passwordEl.value;
-  const pass2 = passwordConfirmEl.value;
+      const username = usernameEl.value.trim();
+      const email = emailEl.value.trim();
+      const pass = passwordEl.value;
+      const pass2 = passwordConfirmEl.value;
 
-  if (pass !== pass2) {
-    alert('รหัสผ่านไม่ตรงกัน');
-    return;
-  }
+      if (pass !== pass2) {
+        alert('รหัสผ่านไม่ตรงกัน');
+        return;
+      }
 
-  const users = JSON.parse(localStorage.getItem('users')) || [];
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      if (users.some(u => u.email === email)) {
+        alert('อีเมลนี้มีอยู่ในระบบแล้ว');
+        return;
+      }
 
-  // เช็คว่าอีเมลมีอยู่ในระบบแล้วหรือไม่
-  if (users.some(u => u.email === email)) {
-    alert('อีเมลนี้มีอยู่ในระบบแล้ว');
-    return;
-  }
+      const hashed = simpleHashPassword(pass);
+      const newUser = { username, email, password: hashed };
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
 
-  const hashed = simpleHashPassword(pass);
-  const newUser = { username, email, password: hashed };
-  users.push(newUser);
-  localStorage.setItem('users', JSON.stringify(users));
+      alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
 
-  alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+      usernameEl.value = "";
+      emailEl.value = "";
+      passwordEl.value = "";
+      passwordConfirmEl.value = "";
 
-  // ล้างข้อมูลใน input ด้วยตนเอง
-  usernameEl.value = "";
-  emailEl.value = "";
-  passwordEl.value = "";
-  passwordConfirmEl.value = "";
-
-  closeModal();
-}
-
+      closeModal();
+    }
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim();
@@ -581,17 +652,20 @@ function handleRegister(e) {
         const card = document.createElement('div');
         card.classList.add('product-card');
         card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}" class="product-image" loading="lazy">
+          <img src="${p.image}" alt="${p.name}" class="product-image" data-product-id="${p.id}" loading="lazy">
           <div class="product-info">
             <h3>${p.name}</h3>
             <p>${p.desc}</p>
             <div class="product-price">฿${p.price}</div>
           </div>
           <div class="product-actions">
+            <a href="#" class="action-button action-view-detail" data-product-id="${p.id}">
+              <i class="fas fa-search"></i> ดูรายละเอียด
+            </a>
             <a href="#" class="action-button action-add-to-cart" data-product-id="${p.id}">
               <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
             </a>
-            <a href="#" class="action-button">
+            <a href="#" class="action-button action-like" data-product-id="${p.id}">
               <i class="fas fa-heart"></i> ถูกใจ
             </a>
           </div>
@@ -609,17 +683,20 @@ function handleRegister(e) {
         const card = document.createElement('div');
         card.classList.add('product-card');
         card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}" class="product-image" loading="lazy">
+          <img src="${p.image}" alt="${p.name}" class="product-image" data-product-id="${p.id}" loading="lazy">
           <div class="product-info">
             <h3>${p.name}</h3>
             <p>${p.desc}</p>
             <div class="product-price">฿${p.price}</div>
           </div>
           <div class="product-actions">
+            <a href="#" class="action-button action-view-detail" data-product-id="${p.id}">
+              <i class="fas fa-search"></i> ดูรายละเอียด
+            </a>
             <a href="#" class="action-button action-add-to-cart" data-product-id="${p.id}">
               <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
             </a>
-            <a href="#" class="action-button">
+            <a href="#" class="action-button action-like" data-product-id="${p.id}">
               <i class="fas fa-heart"></i> ถูกใจ
             </a>
           </div>
@@ -633,6 +710,58 @@ function handleRegister(e) {
       if(!products.length) return [];
       const shuffled = [...products].sort(() => 0.5 - Math.random());
       return shuffled.slice(0, 2);
+    }
+
+    /****************************************************
+     * ======== Product Detail Modal & Wishlist =========
+     ****************************************************/
+    function openProductDetail(productId) {
+      const products = loadProducts();
+      const product = products.find(p => p.id === productId);
+      if(product) {
+        document.getElementById('detailImage').src = product.image;
+        document.getElementById('detailName').textContent = product.name;
+        document.getElementById('detailDesc').textContent = product.desc;
+        document.getElementById('detailPrice').textContent = '฿' + product.price;
+        document.getElementById('addToCartFromDetail').setAttribute('data-product-id', product.id);
+        document.getElementById('productDetailModal').style.display = 'flex';
+      }
+    }
+    function closeProductDetail() {
+      document.getElementById('productDetailModal').style.display = 'none';
+    }
+    document.getElementById('addToCartFromDetail').addEventListener('click', function(e) {
+      const productId = parseInt(e.target.getAttribute('data-product-id'));
+      addToCart(productId);
+      closeProductDetail();
+    });
+
+    // Toggle Wishlist (ถูกใจสินค้า)
+    function toggleLike(productId, btnElement) {
+      let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+      if(wishlist.includes(productId)) {
+        wishlist = wishlist.filter(id => id !== productId);
+        alert('นำออกจากรายการถูกใจแล้ว');
+        btnElement.classList.remove('liked');
+      } else {
+        wishlist.push(productId);
+        alert('เพิ่มลงในรายการถูกใจแล้ว');
+        btnElement.classList.add('liked');
+      }
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    }
+
+    /****************************************************
+     * ========= Dark Mode Toggle Function =========
+     ****************************************************/
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const themeToggleBtn = document.getElementById('themeToggle');
+      if(document.body.classList.contains('dark-mode')) {
+        themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> โหมดสว่าง';
+      } else {
+        themeToggleBtn.innerHTML = '<i class="fas fa-adjust"></i> โหมดมืด';
+      }
     }
 
     /****************************************************
@@ -720,7 +849,6 @@ function handleRegister(e) {
       if(editingProductId) {
         const idx = products.findIndex(p => p.id === editingProductId);
         if(idx === -1) return;
-        const oldImage = products[idx].image;
         if(imageFile) {
           const reader = new FileReader();
           reader.onload = (event) => {
@@ -791,19 +919,49 @@ function handleRegister(e) {
      ****************************************************/
     // สำหรับสินค้าในหน้า Products และ AI Recommendations
     document.getElementById('productsGrid').addEventListener('click', function(e) {
-      const btn = e.target.closest('.action-add-to-cart');
-      if(btn) {
+      const viewBtn = e.target.closest('.action-view-detail');
+      if(viewBtn) {
         e.preventDefault();
-        const productId = parseInt(btn.getAttribute('data-product-id'));
+        const productId = parseInt(viewBtn.getAttribute('data-product-id'));
+        openProductDetail(productId);
+        return;
+      }
+      const addBtn = e.target.closest('.action-add-to-cart');
+      if(addBtn) {
+        e.preventDefault();
+        const productId = parseInt(addBtn.getAttribute('data-product-id'));
         addToCart(productId);
+        return;
+      }
+      const likeBtn = e.target.closest('.action-like');
+      if(likeBtn) {
+        e.preventDefault();
+        const productId = parseInt(likeBtn.getAttribute('data-product-id'));
+        toggleLike(productId, likeBtn);
+        return;
       }
     });
     document.getElementById('aiRecommendGrid').addEventListener('click', function(e) {
-      const btn = e.target.closest('.action-add-to-cart');
-      if(btn) {
+      const viewBtn = e.target.closest('.action-view-detail');
+      if(viewBtn) {
         e.preventDefault();
-        const productId = parseInt(btn.getAttribute('data-product-id'));
+        const productId = parseInt(viewBtn.getAttribute('data-product-id'));
+        openProductDetail(productId);
+        return;
+      }
+      const addBtn = e.target.closest('.action-add-to-cart');
+      if(addBtn) {
+        e.preventDefault();
+        const productId = parseInt(addBtn.getAttribute('data-product-id'));
         addToCart(productId);
+        return;
+      }
+      const likeBtn = e.target.closest('.action-like');
+      if(likeBtn) {
+        e.preventDefault();
+        const productId = parseInt(likeBtn.getAttribute('data-product-id'));
+        toggleLike(productId, likeBtn);
+        return;
       }
     });
     // สำหรับปุ่มในตะกร้า
@@ -837,8 +995,10 @@ function handleRegister(e) {
     window.onclick = function(e) {
       const authModal = document.getElementById('authModal');
       const adminPanel = document.getElementById('adminPanel');
+      const productDetailModal = document.getElementById('productDetailModal');
       if(e.target === authModal) closeModal();
       if(e.target === adminPanel) closeAdminPanel();
+      if(e.target === productDetailModal) closeProductDetail();
     };
 
     // Service Worker Registration using Blob
