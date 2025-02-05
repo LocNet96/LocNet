@@ -5,24 +5,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LocNet Auto Parts (ใช้รหัส  สำหรับ Admin)</title>
-
-  <!-- Optimization & SEO Meta Tags -->
-  <meta name="description" content="LocNet Auto Parts - ร้านอะไหล่รถยนต์ออนไลน์ที่ใหญ่ที่สุด">
-  <meta name="keywords" content="อะไหล่รถยนต์, อะไหล่แท้, toyota, honda, nissan">
-  <meta property="og:title" content="LocNet Auto Parts">
-  <meta property="og:description" content="ร้านอะไหล่รถยนต์ออนไลน์ที่ใหญ่ที่สุด">
-  <meta property="og:image" content="https://yourdomain.com/og-image.jpg">
-
-  <!-- Performance Optimization -->
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="style" href="styles.css">
-  <link rel="preload" as="script" href="app.js">
-
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563EB">
-
   <!-- Preconnect for faster font loading -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -124,8 +106,6 @@
       .cart-sidebar { width: 100%; }
     }
   </style>
-  <!-- รวมไฟล์ db-manager.js (ใหม่) -->
-  <script src="db-manager.js" defer></script>
 </head>
 <body>
   <!-- Header -->
@@ -269,15 +249,11 @@
         <div class="filter-group">
           <select>
             <option>เลือกรุ่นรถ</option>
-            <option>Honda FIT</option>
           </select>
         </div>
         <div class="filter-group">
           <select>
             <option>เลือกปีรถ</option>
-            <option>2004-2006</option>
-            <option>2008-2013</option>
-            <option>2014-2018</option>
           </select>
         </div>
         <div class="filter-group">
@@ -368,7 +344,7 @@
       </div>
       <div class="footer-section">
         <h3>ติดต่อเรา</h3>
-        <p><i class="fas fa-map-marker-alt"></i> 99 หันคา ชัยนาท</p>
+        <p><i class="fas fa-map-marker-alt"></i> 123 ถ.รัชดาภิเษก กรุงเทพฯ</p>
         <p><i class="fas fa-phone"></i> 02-123-4567</p>
         <p><i class="fas fa-envelope"></i> contact@locnetauto.com</p>
       </div>
@@ -436,48 +412,49 @@
       document.getElementById('loginForm').style.display = (tabName === 'login') ? 'block' : 'none';
       document.getElementById('registerForm').style.display = (tabName === 'register') ? 'block' : 'none';
     }
-    function handleRegister(e) {
-      e.preventDefault();
+function handleRegister(e) {
+  e.preventDefault();
 
-      // ดึงค่าจาก input
-      const usernameEl = document.getElementById('reg-username');
-      const emailEl = document.getElementById('reg-email');
-      const passwordEl = document.getElementById('reg-password');
-      const passwordConfirmEl = document.getElementById('reg-password-confirm');
+  // ดึงค่าจาก input
+  const usernameEl = document.getElementById('reg-username');
+  const emailEl = document.getElementById('reg-email');
+  const passwordEl = document.getElementById('reg-password');
+  const passwordConfirmEl = document.getElementById('reg-password-confirm');
 
-      const username = usernameEl.value.trim();
-      const email = emailEl.value.trim();
-      const pass = passwordEl.value;
-      const pass2 = passwordConfirmEl.value;
+  const username = usernameEl.value.trim();
+  const email = emailEl.value.trim();
+  const pass = passwordEl.value;
+  const pass2 = passwordConfirmEl.value;
 
-      if (pass !== pass2) {
-        alert('รหัสผ่านไม่ตรงกัน');
-        return;
-      }
+  if (pass !== pass2) {
+    alert('รหัสผ่านไม่ตรงกัน');
+    return;
+  }
 
-      const users = JSON.parse(localStorage.getItem('users')) || [];
+  const users = JSON.parse(localStorage.getItem('users')) || [];
 
-      // เช็คว่าอีเมลมีอยู่ในระบบแล้วหรือไม่
-      if (users.some(u => u.email === email)) {
-        alert('อีเมลนี้มีอยู่ในระบบแล้ว');
-        return;
-      }
+  // เช็คว่าอีเมลมีอยู่ในระบบแล้วหรือไม่
+  if (users.some(u => u.email === email)) {
+    alert('อีเมลนี้มีอยู่ในระบบแล้ว');
+    return;
+  }
 
-      const hashed = simpleHashPassword(pass);
-      const newUser = { username, email, password: hashed };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
+  const hashed = simpleHashPassword(pass);
+  const newUser = { username, email, password: hashed };
+  users.push(newUser);
+  localStorage.setItem('users', JSON.stringify(users));
 
-      alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
+  alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
 
-      // ล้างข้อมูลใน input ด้วยตนเอง
-      usernameEl.value = "";
-      emailEl.value = "";
-      passwordEl.value = "";
-      passwordConfirmEl.value = "";
+  // ล้างข้อมูลใน input ด้วยตนเอง
+  usernameEl.value = "";
+  emailEl.value = "";
+  passwordEl.value = "";
+  passwordConfirmEl.value = "";
 
-      closeModal();
-    }
+  closeModal();
+}
+
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim();
@@ -663,7 +640,7 @@
      ****************************************************/
     let editingProductId = null;
     function openAdminPanel() {
-      const pass = prompt("กรุณาใส่รหัสผ่านสำหรับ Admin:");
+      const pass = prompt("กรุณาใส่รหัสผ่านสำหรับ Admin (2934):");
       if(pass === "2934") {
         document.getElementById('adminPanel').style.display = 'flex';
         document.getElementById('productForm').reset();
@@ -743,6 +720,7 @@
       if(editingProductId) {
         const idx = products.findIndex(p => p.id === editingProductId);
         if(idx === -1) return;
+        const oldImage = products[idx].image;
         if(imageFile) {
           const reader = new FileReader();
           reader.onload = (event) => {
@@ -863,40 +841,38 @@
       if(e.target === adminPanel) closeAdminPanel();
     };
 
-    // ฟังก์ชันโหลดรูปภาพแบบมี cache
-    async function loadImage(url) {
-      const dbManager = new DBManager();
-      await dbManager.init();
-
-      // ตรวจสอบ cache ก่อน
-      const cachedImage = await dbManager.getCachedImage(url);
-      if (cachedImage) {
-          return URL.createObjectURL(cachedImage);
-      }
-
-      // ถ้าไม่มีใน cache ให้โหลดใหม่
-      try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          await dbManager.cacheImage(url, blob);
-          return URL.createObjectURL(blob);
-      } catch (error) {
-          console.error('Error loading image:', error);
-          return '/placeholder.png';
-      }
-    }
-
-    // ลงทะเบียน Service Worker
+    // Service Worker Registration using Blob
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
-              .then(registration => {
-                  console.log('ServiceWorker registered:', registration.scope);
-              })
-              .catch(error => {
-                  console.log('ServiceWorker registration failed:', error);
-              });
-      });
+      const swCode = `
+        const CACHE_NAME = 'locnet-cache-v1';
+        const urlsToCache = [
+          '/',
+          // สามารถเพิ่ม URLs ที่ต้องการแคชเพิ่มเติมได้
+        ];
+        self.addEventListener('install', function(event) {
+          event.waitUntil(
+            caches.open(CACHE_NAME).then(function(cache) {
+              return cache.addAll(urlsToCache);
+            })
+          );
+        });
+        self.addEventListener('fetch', function(event) {
+          event.respondWith(
+            caches.match(event.request).then(function(response) {
+              return response || fetch(event.request);
+            })
+          );
+        });
+      `;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl)
+        .then(function(registration) {
+          console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch(function(error) {
+          console.log('Service Worker registration failed:', error);
+        });
     }
   </script>
 </body>
