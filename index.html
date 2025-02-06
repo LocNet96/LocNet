@@ -141,7 +141,6 @@
     .product-card:hover .product-actions { bottom: 0; }
     .action-button { color: white; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
     .action-button:hover { opacity: 0.8; }
-    /* กำหนดสไตล์ให้ปุ่มถูกใจ เมื่อถูกเลือก */
     .action-button.action-like.liked {
       color: var(--danger);
     }
@@ -282,6 +281,7 @@
         </div>
         <div class="form-group">
           <label>อัปโหลดรูปสินค้า (ถ้าไม่เลือกจะใช้รูปเดิม)</label>
+          <input type="file" id="productImage" accept="image/*">
           <input type="file" id="productImage" accept="image/*">
         </div>
         <button type="submit" class="btn-primary" id="productFormBtn">
@@ -557,6 +557,78 @@
     }
 
     /****************************************************
+     * =========== ฟังก์ชันส่งแจ้งเตือน Discord =========
+     ****************************************************/
+    async function sendToDiscord(cart, total, orderDetails) {
+      // ใส่ URL Webhook ของ Discord ตรงนี้ (อย่าลืมใส่เครื่องหมาย "" รอบ URL)
+      const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1336992146145673257/_ednBAPdn4Bo9ml2MkcLJQoGzaNBxMKveJqMBksdWmWpE5MIFzaOGepODtCheOHqZYLv";
+
+      // สร้างวันที่และเวลาในรูปแบบไทย
+      const thaiDateTime = new Date().toLocaleString('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      // สร้าง embed สำหรับแสดงข้อมูลในรูปแบบที่สวยงาม
+      const embed = {
+        title: "🛒 มีคำสั่งซื้อใหม่เข้ามา!",
+        color: 0xFF8C00, // สีส้ม
+        fields: [
+          {
+            name: "📋 รายการสินค้า",
+            value: cart.map(item =>
+              `• ${item.name}\n   จำนวน: ${item.quantity} ชิ้น = ${item.price * item.quantity} บาท`
+            ).join('\n') || "ไม่มีรายการ",
+            inline: false
+          },
+          {
+            name: "💰 ยอดรวมทั้งสิ้น",
+            value: `${total} บาท`,
+            inline: true
+          },
+          {
+            name: "💳 ชำระโดย",
+            value: orderDetails.paymentMethod,
+            inline: true
+          },
+          {
+            name: "👤 ข้อมูลผู้สั่ง",
+            value: `ชื่อ: ${orderDetails.address.fullName}\nเบอร์โทร: ${orderDetails.address.phone}\nที่อยู่: ${orderDetails.address.address}\n${orderDetails.address.note ? `หมายเหตุ: ${orderDetails.address.note}` : ''}`,
+            inline: false
+          }
+        ],
+        footer: {
+          text: `สั่งซื้อเมื่อ: ${thaiDateTime}`
+        }
+      };
+
+      try {
+        const response = await fetch(DISCORD_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: "LocNet Auto Parts",
+            avatar_url: "https://i.imgur.com/AfFp7pu.png", 
+            embeds: [embed],
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('ไม่สามารถส่งข้อมูลไปยัง Discord ได้');
+        }
+
+        console.log('ส่งการแจ้งเตือนไปยัง Discord สำเร็จ');
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
+      }
+    }
+
+    /****************************************************
      * =========== ตะกร้าสินค้า (Cart) ================
      ****************************************************/
     function toggleCart() {
@@ -632,11 +704,33 @@
       renderCartItems();
       updateCartCount();
     }
+
+    // === ปรับ checkout ให้เรียก sendToDiscord เมื่อสั่งซื้อ ===
     function checkout() {
       if(cart.length === 0) {
         alert('ตะกร้าสินค้าว่าง');
         return;
       }
+      // ตัวอย่างการสร้างข้อมูล Order Details แบบง่าย ๆ
+      // (จริง ๆ อาจให้ผู้ใช้กรอกฟอร์มรายละเอียดการจัดส่งและวิธีชำระเงิน)
+      const orderDetails = {
+        paymentMethod: "โอนผ่านธนาคาร",
+        address: {
+          fullName: "ชื่อ-นามสกุลลูกค้า",
+          phone: "099-999-9999",
+          address: "123/45 อาคารตัวอย่าง เขตตัวอย่าง กรุงเทพฯ",
+          note: "กรุณาจัดส่งภายในวันพรุ่งนี้"
+        }
+      };
+
+      let total = 0;
+      cart.forEach(item => {
+        total += item.price * item.quantity;
+      });
+
+      // เรียกฟังก์ชันส่งแจ้งเตือนไปยัง Discord
+      sendToDiscord(cart, total, orderDetails);
+
       alert('ดำเนินการสั่งซื้อ...');
     }
 
@@ -769,7 +863,7 @@
      ****************************************************/
     let editingProductId = null;
     function openAdminPanel() {
-      const pass = prompt("กรุณาใส่รหัสผ่านสำหรับ Admin (2934):");
+      const pass = prompt("กรุณาใส่รหัสผ่านสำหรับ Admin:");
       if(pass === "2934") {
         document.getElementById('adminPanel').style.display = 'flex';
         document.getElementById('productForm').reset();
