@@ -2,226 +2,41 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
+  <!-- Content Security Policy (CSP) ปรับให้รองรับ CDN และฟังก์ชันทั้งหมด -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.emailjs.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+    font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+    img-src 'self' data: https://placehold.co https://via.placeholder.com https://auhxtlpiyfscdymddabc.supabase.co;
+    connect-src 'self' https://discord.com/api/webhooks/1336992146145673257/_ednBAPdn4Bo9ml2MkcLJQoGzaNBxMKveJqMBksdWmWpE5MIFzaOGepODtCheOHqZYLv https://api.emailjs.com https://auhxtlpiyfscdymddabc.supabase.co;
+    object-src 'none';
+    frame-src 'none';
+    base-uri 'self';
+  ">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="no-referrer">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LocNet Auto Parts (ใช้รหัส สำหรับ Admin)</title>
-  <!-- Preconnect for faster font loading -->
+
+  <!-- CSS และ Font -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- ใช้ฟอนต์ Prompt อยู่แล้ว -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 
-  <style>
-    :root {
-      --primary: #2563EB;
-      --secondary: #1E40AF;
-      --accent: #F59E0B;
-      --success: #10B981;
-      --warning: #F59E0B;
-      --danger: #EF4444;
-      --background: #F3F4F6;
-      --text: #1F2937;
-      --light: #F9FAFB;
-      --dark: #111827;
-      --transition-speed: 0.3s;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Prompt', sans-serif; 
-      background: var(--background); 
-      color: var(--text); 
-      line-height: 1.6;
-      transition: background var(--transition-speed), color var(--transition-speed);
-    }
-    body.dark-mode {
-      background: #121212;
-      color: #e0e0e0;
-    }
-    body.dark-mode .header,
-    body.dark-mode .footer,
-    body.dark-mode .modal-content {
-      background: #1e1e1e;
-    }
-    body.dark-mode .nav-links a,
-    body.dark-mode .product-info h3,
-    body.dark-mode .product-info p {
-      color: #e0e0e0;
-    }
-
-    /* Header */
-    .header { 
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-      position: fixed; 
-      width: 100%; 
-      top: 0; 
-      z-index: 1000; 
-      padding-bottom: 0.5rem;
-    }
-    .top-bar { background: var(--primary); color: white; padding: 0.5rem; text-align: center; }
-    .nav-container { max-width: 1400px; margin: 0 auto; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 1.5rem; font-weight: 700; color: var(--light); text-decoration: none; }
-    .nav-links { display: flex; gap: 2rem; }
-    .nav-links a { text-decoration: none; color: var(--light); font-weight: 500; transition: color var(--transition-speed); }
-    .nav-links a:hover { color: var(--accent); }
-    .user-actions { display: flex; align-items: center; gap: 1rem; }
-    .user-actions button { transition: background var(--transition-speed), color var(--transition-speed); }
-    .cart-icon { position: relative; cursor: pointer; }
-    .cart-count { position: absolute; top: -8px; right: -8px; background: var(--accent); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
-
-    /* Buttons */
-    .btn-primary, .btn-secondary {
-      cursor: pointer; border: none; padding: 0.6rem 1rem; border-radius: 0.4rem; font-weight: 500; transition: background var(--transition-speed);
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--secondary); }
-    .btn-secondary { background: var(--accent); color: white; }
-    .btn-secondary:hover { background: var(--warning); }
-    .btn-danger, .btn-logout {
-      background: var(--danger); color: white; padding: 0.4rem 0.8rem; border-radius: 0.3rem; border: none; cursor: pointer; transition: opacity var(--transition-speed);
-    }
-    .btn-danger:hover, .btn-logout:hover { opacity: 0.8; }
-    #userGreeting { margin-right: 1rem; font-weight: 500; color: var(--success); }
-
-    /* Modals */
-    .modal { 
-      display: none; 
-      position: fixed; 
-      top: 0; left: 0; 
-      width: 100%; 
-      height: 100%; 
-      background: rgba(0,0,0,0.5); 
-      justify-content: center; 
-      align-items: center; 
-      z-index: 1100; 
-      animation: fadeIn var(--transition-speed);
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .modal-content { 
-      background: white; 
-      padding: 2rem; 
-      border-radius: 1rem; 
-      width: 100%; 
-      max-width: 400px; 
-      position: relative; 
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .modal-content.product-detail { max-width: 600px; }
-    .close-modal { position: absolute; top: 1rem; right: 1rem; cursor: pointer; font-size: 1.2rem; color: var(--danger); }
-    .tabs { display: flex; margin-bottom: 1rem; }
-    .tab { flex: 1; padding: 0.5rem; text-align: center; cursor: pointer; }
-    .tab.active { border-bottom: 2px solid var(--primary); color: var(--primary); font-weight: 600; }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-    .form-group input, .form-group textarea, .form-group select {
-      width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.5rem;
-    }
-
-    /* Admin Panel */
-    .admin-panel {
-      display: none; position: fixed; top: 0; left: 0; 
-      width: 100%; height: 100%; 
-      background: rgba(0,0,0,0.5); justify-content: center; align-items: center; 
-      z-index: 1200;
-    }
-    .admin-content {
-      background: white; padding: 2rem; border-radius: 1rem; width: 100%; max-width: 600px; position: relative;
-
-      /* === เริ่ม เพิ่ม/แก้ไข === */
-      /* เพื่อให้เลื่อน (scroll) ได้เมื่อสินค้าเยอะ */
-      max-height: 90vh;
-      overflow-y: auto;
-      /* === สิ้นสุด เพิ่ม/แก้ไข === */
-    }
-    .close-admin { position: absolute; top: 1rem; right: 1rem; cursor: pointer; font-size: 1.2rem; color: var(--danger); }
-
-    /* Cart Sidebar */
-    .cart-sidebar {
-      position: fixed; top: 0; right: -400px; width: 400px; height: 100%; 
-      background: white; padding: 2rem; box-shadow: -2px 0 4px rgba(0,0,0,0.1); 
-      transition: right var(--transition-speed); z-index: 1050; display: flex; flex-direction: column;
-    }
-    .cart-sidebar.open { right: 0; }
-    .cart-header { display: flex; justify-content: space-between; align-items: center; }
-    .close-cart { cursor: pointer; font-size: 1.2rem; color: var(--danger); }
-    .cart-item { display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #ddd; }
-    .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem; }
-    .cart-summary { margin-top: auto; }
-
-    /* Product & Search Section */
-    .search-section { margin-top: 4.5rem; }
-    .advanced-search {
-      background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-      max-width: 1200px; margin: 2rem auto;
-    }
-    .search-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
-    .filter-group select, .filter-group input { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 0.5rem; }
-    .product-section {
-      display: grid; grid-template-columns: 250px 1fr; gap: 2rem; 
-      max-width: 1400px; margin: 2rem auto; padding: 0 1rem;
-    }
-    .filters-sidebar { background: white; padding: 1.5rem; border-radius: 1rem; height: fit-content; }
-    .filter-category { margin-bottom: 1.5rem; }
-    .price-range { display: flex; gap: 1rem; align-items: center; }
-    .products-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-      gap: 1.5rem;
-    }
-    .product-card {
-      position: relative; overflow: hidden; background: white; border-radius: 0.5rem; 
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform var(--transition-speed);
-    }
-    .product-card:hover { transform: translateY(-3px); }
-    .product-image { width: 100%; height: 200px; object-fit: cover; display: block; cursor: pointer; }
-    .product-info { padding: 1rem; }
-    .product-price { font-size: 1.2rem; font-weight: 600; margin-top: 0.5rem; color: var(--accent); }
-    .product-actions {
-      position: absolute; bottom: -80px; left: 0; right: 0; 
-      background: rgba(0,0,0,0.8); padding: 0.5rem; display: flex; 
-      justify-content: space-around; transition: bottom var(--transition-speed);
-    }
-    .product-card:hover .product-actions { bottom: 0; }
-    .action-button {
-      color: white; text-decoration: none; display: flex; align-items: center; 
-      gap: 0.5rem; font-size: 0.9rem;
-    }
-    .action-button:hover { opacity: 0.8; }
-    .action-button.action-like.liked { color: var(--danger); }
-
-    /* AI & Reviews */
-    .reviews { max-width: 1200px; margin: 4rem auto; padding: 0 1rem; }
-    .review-card {
-      background: white; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1rem; 
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .rating { color: var(--accent); margin-bottom: 0.5rem; }
-    .ai-recommend-section { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-    .ai-recommend-products {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;
-    }
-
-    /* Footer */
-    .footer { background: var(--primary); color: white; margin-top: 2rem; }
-    .footer-content {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; 
-      max-width: 1200px; margin: 0 auto; padding: 4rem 1rem;
-    }
-    .footer-section h3 { margin-bottom: 1rem; }
-    .social-links { display: flex; gap: 1rem; margin-top: 1rem; }
-    .social-links a { color: white; font-size: 1.5rem; transition: color var(--transition-speed); }
-    .social-links a:hover { color: var(--accent); }
-
-    @media (max-width: 768px) {
-      .product-section { grid-template-columns: 1fr; }
-      .nav-links { display: none; }
-      .cart-sidebar { width: 100%; }
-    }
-  </style>
+  <!-- CDN Scripts ที่จำเป็น -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
   <!-- Header -->
   <header class="header">
-    <div class="top-bar">🔥 โปรโมชั่นพิเศษ: ส่วนลด 20% สำหรับอะไหล่เบรกทุกชิ้น!</div>
+    <div class="top-bar">
+      🔥 โปรโมชั่นพิเศษ: ส่วนลด 20% สำหรับอะไหล่เบรกทุกชิ้น!
+    </div>
     <nav class="nav-container">
       <a href="#" class="logo">LocNet Auto Parts</a>
       <div class="nav-links">
@@ -229,7 +44,9 @@
         <a href="#brands">แบรนด์</a>
         <a href="#services">บริการ</a>
         <a href="#promotions">โปรโมชั่น</a>
+        <a href="#blog">บล็อก</a>
         <a href="#contact">ติดต่อ</a>
+        <a href="#" onclick="openAdminPanel()">Admin</a> <!-- เพิ่มลิงก์ Admin -->
       </div>
       <div class="user-actions">
         <span id="userGreeting"></span>
@@ -239,8 +56,8 @@
         <button id="logoutBtn" class="btn-logout" style="display:none" onclick="handleLogout()">
           ออกจากระบบ
         </button>
-        <button id="adminBtn" class="btn-secondary" onclick="openAdminPanel()">
-          <i class="fas fa-lock"></i> จัดการสินค้า (Admin)
+        <button id="profileBtn" class="btn-secondary" data-action="open-profile" style="display:none">
+          <i class="fas fa-user-circle"></i> ข้อมูลส่วนตัว
         </button>
         <button id="themeToggle" class="btn-secondary" onclick="toggleTheme()">
           <i class="fas fa-adjust"></i> โหมดมืด
@@ -257,7 +74,7 @@
   <div id="cartSidebar" class="cart-sidebar">
     <div class="cart-header">
       <h2>ตะกร้าสินค้า</h2>
-      <span class="close-cart" onclick="toggleCart()">&times;</span>
+      <span class="close-cart" onclick="toggleCart()">×</span>
     </div>
     <div id="cartItems"></div>
     <div class="cart-summary">
@@ -269,16 +86,71 @@
     </div>
   </div>
 
+  <!-- User Profile Modal -->
+  <div id="userProfileModal" class="modal">
+    <div class="modal-content profile-content">
+      <span class="close-profile" onclick="closeUserProfile()">×</span>
+      <h2>ข้อมูลส่วนตัว</h2>
+      <div id="profileNotification" class="alert" style="display: none;"></div>
+      <form id="profileForm">
+        <div class="form-group">
+          <label>ชื่อผู้ใช้</label>
+          <input type="text" id="profile-username" required>
+        </div>
+        <div class="form-group">
+          <label>อีเมล</label>
+          <input type="email" id="profile-email" readonly>
+          <small class="text-muted">ไม่สามารถแก้ไขอีเมลได้</small>
+        </div>
+        <div class="form-group">
+          <label>เบอร์โทรศัพท์</label>
+          <input type="tel" id="profile-phone" required>
+        </div>
+        <div class="form-group">
+          <label>ที่อยู่</label>
+          <textarea id="profile-address" rows="3" required></textarea>
+        </div>
+        <div class="button-group">
+          <button type="submit" class="btn-primary" onclick="handleProfileUpdate(event)">
+            <i class="fas fa-save"></i> บันทึกข้อมูล
+          </button>
+        </div>
+      </form>
+      <div class="danger-zone">
+        <h3>ลบบัญชี</h3>
+        <div id="deleteConfirm" style="display: none;" class="alert alert-danger">
+          <p>การลบบัญชีจะลบข้อมูลทั้งหมดของคุณและไม่สามารถกู้คืนได้ คุณแน่ใจหรือไม่?</p>
+          <button onclick="confirmDeleteAccount()" class="btn-danger">
+            <i class="fas fa-trash"></i> ยืนยันการลบบัญชี
+          </button>
+          <button onclick="cancelDeleteAccount()" class="btn-secondary">ยกเลิก</button>
+        </div>
+        <button onclick="showDeleteConfirm()" class="btn-danger" id="deleteAccountBtn">
+          <i class="fas fa-trash"></i> ลบบัญชีผู้ใช้
+        </button>
+      </div>
+      <div class="pdpa-rights">
+        <h3>สิทธิ์ของคุณตาม PDPA</h3>
+        <ul>
+          <li>สิทธิในการเข้าถึงและขอรับสำเนาข้อมูลส่วนบุคคล</li>
+          <li>สิทธิในการแก้ไขข้อมูลส่วนบุคคลให้ถูกต้อง</li>
+          <li>สิทธิในการลบหรือทำลายข้อมูลส่วนบุคคล</li>
+          <li>สิทธิในการระงับการใช้ข้อมูลส่วนบุคคล</li>
+          <li>สิทธิในการคัดค้านการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
   <!-- Authentication Modal -->
   <div id="authModal" class="modal">
     <div class="modal-content">
-      <span class="close-modal" onclick="closeModal()">&times;</span>
+      <span class="close-modal" onclick="closeModal()">×</span>
       <div class="tabs">
         <div class="tab active" onclick="switchTab(event, 'login')">เข้าสู่ระบบ</div>
         <div class="tab" onclick="switchTab(event, 'register')">สมัครสมาชิก</div>
       </div>
-      <!-- Login Form -->
-      <form id="loginForm" style="display:block" onsubmit="handleLogin(event)">
+      <form id="loginForm" style="display:block">
         <div class="form-group">
           <label>อีเมล</label>
           <input type="email" id="login-email" required>
@@ -287,11 +159,10 @@
           <label>รหัสผ่าน</label>
           <input type="password" id="login-password" required>
         </div>
-        <button type="submit" class="btn-primary">เข้าสู่ระบบ</button>
+        <button type="submit" class="btn-primary" onclick="handleLogin(event)">เข้าสู่ระบบ</button>
+        <a href="#" id="forgotPasswordBtn" style="display:block; margin-top:10px; text-align:right;" onclick="openForgotPasswordModal()">ลืมรหัสผ่าน?</a>
       </form>
-      <!-- Register Form -->
-      <!-- === เริ่ม เพิ่ม/แก้ไข === -->
-      <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+      <form id="registerForm" style="display:none">
         <div class="form-group">
           <label>ชื่อผู้ใช้</label>
           <input type="text" id="reg-username" required>
@@ -316,18 +187,17 @@
           <label>ยืนยันรหัสผ่าน</label>
           <input type="password" id="reg-password-confirm" required>
         </div>
-        <button type="submit" class="btn-primary">สมัครสมาชิก</button>
+        <button type="submit" class="btn-primary" onclick="handleRegister(event)">สมัครสมาชิก</button>
       </form>
-      <!-- === สิ้นสุด เพิ่ม/แก้ไข === -->
     </div>
   </div>
 
   <!-- Admin Panel -->
   <div id="adminPanel" class="admin-panel">
     <div class="admin-content">
-      <span class="close-admin" onclick="closeAdminPanel()">&times;</span>
+      <span class="close-admin" onclick="closeAdminPanel()">×</span>
       <h2 id="adminTitle">เพิ่ม/แก้ไข สินค้า</h2>
-      <form id="productForm" onsubmit="handleProductSubmit(event)">
+      <form id="productForm">
         <input type="hidden" id="editProductId" value="">
         <div class="form-group">
           <label>ชื่อสินค้า</label>
@@ -345,7 +215,7 @@
           <label>อัปโหลดรูปสินค้า (ถ้าไม่เลือกจะใช้รูปเดิม)</label>
           <input type="file" id="productImage" accept="image/*">
         </div>
-        <button type="submit" class="btn-primary" id="productFormBtn">บันทึกสินค้า</button>
+        <button type="submit" class="btn-primary" id="productFormBtn" onclick="handleProductSubmit(event)">บันทึกสินค้า</button>
       </form>
       <hr>
       <h3>รายการสินค้า</h3>
@@ -356,21 +226,22 @@
   <!-- Product Detail Modal -->
   <div id="productDetailModal" class="modal">
     <div class="modal-content product-detail">
-      <span class="close-modal" onclick="closeProductDetail()">&times;</span>
+      <span class="close-modal" onclick="closeProductDetail()">×</span>
       <img id="detailImage" src="" alt="" style="width:100%; border-radius:0.5rem; margin-bottom:1rem;">
       <h3 id="detailName"></h3>
       <p id="detailDesc"></p>
       <div class="product-price" id="detailPrice"></div>
+      <a href="#" id="affiliateLinkModal" class="btn-primary" target="_blank">ซื้อเลย</a>
       <button class="btn-primary" id="addToCartFromDetail">เพิ่มลงตะกร้า</button>
     </div>
   </div>
 
-  <!-- === เริ่ม เพิ่มฟีเจอร์ Checkout Modal === -->
+  <!-- Checkout Modal -->
   <div id="checkoutModal" class="modal">
     <div class="modal-content">
-      <span class="close-modal" onclick="closeCheckoutModal()">&times;</span>
+      <span class="close-modal" onclick="closeCheckoutModal()">×</span>
       <h2>ข้อมูลการจัดส่ง</h2>
-      <form id="checkoutForm" onsubmit="confirmCheckout(event)">
+      <form id="checkoutForm">
         <div class="form-group">
           <label>ชื่อ-นามสกุล</label>
           <input type="text" id="checkoutFullName" required>
@@ -395,11 +266,10 @@
             <option value="บัตรเครดิต/เดบิต">บัตรเครดิต/เดบิต</option>
           </select>
         </div>
-        <button type="submit" class="btn-primary" style="margin-top:1rem;">ยืนยันสั่งซื้อ</button>
+        <button type="submit" class="btn-primary" style="margin-top:1rem;" onclick="confirmCheckout(event)">ยืนยันสั่งซื้อ</button>
       </form>
     </div>
   </div>
-  <!-- === สิ้นสุด เพิ่มฟีเจอร์ Checkout Modal === -->
 
   <!-- Advanced Search Section -->
   <section class="search-section">
@@ -415,10 +285,18 @@
           </select>
         </div>
         <div class="filter-group">
-          <select><option>เลือกรุ่นรถ</option></select>
+          <select>
+            <option>เลือกรุ่นรถ</option>
+            <option>Honda FIT</option>
+          </select>
         </div>
         <div class="filter-group">
-          <select><option>เลือกปีรถ</option></select>
+          <select>
+            <option>เลือกปีรถ</option>
+            <option>2004-2007</option>
+            <option>2008-2013</option>
+            <option>2014-2018</option>
+          </select>
         </div>
         <div class="filter-group">
           <input type="text" placeholder="ค้นหาด้วยชื่อหรือรหัสสินค้า">
@@ -437,7 +315,7 @@
           <input type="range" min="0" max="50000" value="0">
         </div>
         <div class="price-values">
-          <span>฿0</span>
+          <span id="currentPrice">฿0</span>
           <span>฿50,000</span>
         </div>
       </div>
@@ -454,13 +332,33 @@
         <label><input type="checkbox"> Nissan</label>
       </div>
     </aside>
-    <div class="products-grid" id="productsGrid"><!-- สินค้าจะแสดงด้วย JavaScript --></div>
+    <div class="products-grid" id="productsGrid"></div>
+    <div id="pagination" class="pagination"></div>
   </section>
 
   <!-- AI Recommendation Section -->
   <section class="ai-recommend-section">
-    <h2>AI แนะนำสินค้าเพิ่มเติมสำหรับคุณ</h2>
+    <h2>แนะนำสินค้าเพิ่มเติมสำหรับคุณ</h2>
     <div class="ai-recommend-products" id="aiRecommendGrid"></div>
+  </section>
+
+  <!-- Blog Section -->
+  <section id="blog" class="blog-section">
+    <h2>บล็อกของเรา</h2>
+    <div class="blog-posts">
+      <article class="blog-card">
+        <h3>วิวัฒนาการรถยนต์ปี 2025: เทคโนโลยีและนวัตกรรม</h3>
+        <p class="summary">ในปี 2025 อุตสาหกรรมรถยนต์เผชิญกับการเปลี่ยนแปลงอย่างรวดเร็ว...</p>
+        <p class="more-content" style="display:none;">บริษัทชั้นนำทั่วโลกได้นำเสนอเทคโนโลยีล้ำสมัย...</p>
+        <a href="#" class="read-more" onclick="toggleReadMore(event)">อ่านต่อ</a>
+      </article>
+      <article class="blog-card">
+        <h3>ผลกระทบของเทคโนโลยีดิจิทัลต่ออุตสาหกรรมรถยนต์ปี 2025</h3>
+        <p class="summary">ปี 2025 เป็นปีแห่งการเปลี่ยนแปลงที่สำคัญสำหรับอุตสาหกรรมรถยนต์...</p>
+        <p class="more-content" style="display:none;">รถยนต์สมัยใหม่ไม่เพียงแต่มีความปลอดภัยและประสิทธิภาพ...</p>
+        <a href="#" class="read-more" onclick="toggleReadMore(event)">อ่านต่อ</a>
+      </article>
+    </div>
   </section>
 
   <!-- Reviews Section -->
@@ -508,743 +406,27 @@
     </div>
   </footer>
 
-  <script defer>
-    /****************************************************
-     * =========== ข้อมูลเริ่มต้น (LocalStorage) ========
-     ****************************************************/
-    if(!localStorage.getItem('products')) {
+  <!-- AI Status -->
+  <div id="ai-status" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 2px; border-radius: 8px;">
+    <div>EvolutionMode: <span id="ai-mode">initializing...</span></div>
+    <div>Resources: <span id="ai-resources">checking...</span></div>
+  </div>
+
+  <!-- Sync Data Button -->
+  <button id="btn-sync" style="position: fixed; bottom: 80px; right: 20px;">Sync Data</button>
+
+  <!-- Initial Products Data -->
+  <script>
+    if (!localStorage.getItem('products')) {
       const initialProducts = [
-        { id: 1, name: "ผ้าเบรก Premium", desc: "ผ้าเบรกคุณภาพสูง ให้การเบรกที่นุ่มนวล", price: 1500, image: "https://via.placeholder.com/300x200" },
-        { id: 2, name: "ไส้กรองอากาศ High Flow", desc: "เพิ่มประสิทธิภาพการกรองและการไหลของอากาศ", price: 850, image: "https://via.placeholder.com/300x200" }
+        { id: 1, name: "ผ้าเบรก Premium", description: "ผ้าเบรกคุณภาพสูง", price: 1500, image_url: "https://placehold.co/300x200?text=Brake+Premium", affiliateLink: "https://affiliate.example.com/product/1" },
+        { id: 2, name: "ไส้กรองอากาศ High Flow", description: "เพิ่มประสิทธิภาพการกรอง", price: 850, image_url: "https://placehold.co/300x200?text=Air+Filter", affiliateLink: "https://affiliate.example.com/product/2" }
       ];
       localStorage.setItem('products', JSON.stringify(initialProducts));
     }
-    if(!localStorage.getItem('users')) {
-      localStorage.setItem('users', JSON.stringify([]));
-    }
-    if(!localStorage.getItem('wishlist')) {
-      localStorage.setItem('wishlist', JSON.stringify([]));
-    }
-    let cart = [];
-
-    /****************************************************
-     * ============ ฟังก์ชันทั่วไป (Helper) ============
-     ****************************************************/
-    function loadProducts() {
-      return JSON.parse(localStorage.getItem('products'));
-    }
-    function saveProducts(products) {
-      localStorage.setItem('products', JSON.stringify(products));
-    }
-    function getCurrentUser() {
-      const data = sessionStorage.getItem('currentUser');
-      return data ? JSON.parse(data) : null;
-    }
-    function simpleHashPassword(password) {
-      let hash = 0;
-      for (let i = 0; i < password.length; i++) {
-        const chr = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + chr;
-        hash |= 0;
-      }
-      return hash.toString();
-    }
-
-    /****************************************************
-     * =========== ระบบสมาชิก (Login/Register) =========
-     ****************************************************/
-    function openModal() {
-      document.getElementById('authModal').style.display = 'flex';
-    }
-    function closeModal() {
-      document.getElementById('authModal').style.display = 'none';
-    }
-    function switchTab(e, tabName) {
-      const tabs = document.querySelectorAll('.tab');
-      tabs.forEach(t => t.classList.remove('active'));
-      e.target.classList.add('active');
-      document.getElementById('loginForm').style.display = (tabName === 'login') ? 'block' : 'none';
-      document.getElementById('registerForm').style.display = (tabName === 'register') ? 'block' : 'none';
-    }
-
-    // === เริ่ม เพิ่ม/แก้ไข: เก็บ phone, address ในผู้ใช้ด้วย ===
-    function handleRegister(e) {
-      e.preventDefault();
-      const usernameEl = document.getElementById('reg-username');
-      const emailEl = document.getElementById('reg-email');
-      const phoneEl = document.getElementById('reg-phone');
-      const addressEl = document.getElementById('reg-address');
-      const passwordEl = document.getElementById('reg-password');
-      const passwordConfirmEl = document.getElementById('reg-password-confirm');
-
-      const username = usernameEl.value.trim();
-      const email = emailEl.value.trim();
-      const phone = phoneEl.value.trim();
-      const address = addressEl.value.trim();
-      const pass = passwordEl.value;
-      const pass2 = passwordConfirmEl.value;
-
-      if (pass !== pass2) {
-        alert('รหัสผ่านไม่ตรงกัน');
-        return;
-      }
-
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      if (users.some(u => u.email === email)) {
-        alert('อีเมลนี้มีอยู่ในระบบแล้ว');
-        return;
-      }
-
-      const hashed = simpleHashPassword(pass);
-      const newUser = {
-        username, email,
-        phone, address,
-        password: hashed
-      };
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-
-      alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
-      usernameEl.value = ""; emailEl.value = "";
-      phoneEl.value = ""; addressEl.value = "";
-      passwordEl.value = ""; passwordConfirmEl.value = "";
-      closeModal();
-    }
-    // === สิ้นสุด เพิ่ม/แก้ไข ===
-
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
-      const hashed = simpleHashPassword(password);
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      const user = users.find(u => u.email === email && u.password === hashed);
-      if(!user) {
-        alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
-        return;
-      }
-      sessionStorage.setItem('currentUser', JSON.stringify(user));
-      alert('เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ' + user.username);
-      e.target.reset();
-      closeModal();
-      updateUIAfterLogin(user);
-    }
-    function updateUIAfterLogin(user) {
-      document.getElementById('loginBtn').style.display = 'none';
-      document.getElementById('logoutBtn').style.display = 'inline-block';
-      document.getElementById('userGreeting').textContent = `ยินดีต้อนรับ, ${user.username}`;
-    }
-    function handleLogout() {
-      sessionStorage.removeItem('currentUser');
-      document.getElementById('loginBtn').style.display = 'inline-block';
-      document.getElementById('logoutBtn').style.display = 'none';
-      document.getElementById('userGreeting').textContent = '';
-      alert('ออกจากระบบเรียบร้อย');
-    }
-
-    /****************************************************
-     * =========== ฟังก์ชันส่งแจ้งเตือน Discord =========
-     ****************************************************/
-    async function sendToDiscord(cart, total, orderDetails) {
-      const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1336992146145673257/_ednBAPdn4Bo9ml2MkcLJQoGzaNBxMKveJqMBksdWmWpE5MIFzaOGepODtCheOHqZYLv"; 
-      // ^^^ เปลี่ยนเป็น URL ของคุณ
-
-      const thaiDateTime = new Date().toLocaleString('th-TH', {
-        timeZone: 'Asia/Bangkok',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-
-      const embed = {
-        title: "🛒 มีคำสั่งซื้อใหม่เข้ามา!",
-        color: 0xFF8C00,
-        fields: [
-          {
-            name: "📋 รายการสินค้า",
-            value: cart.map(item =>
-              `• ${item.name}\n   จำนวน: ${item.quantity} ชิ้น = ${item.price * item.quantity} บาท`
-            ).join('\n') || "ไม่มีรายการ",
-            inline: false
-          },
-          {
-            name: "💰 ยอดรวมทั้งสิ้น",
-            value: `${total} บาท`,
-            inline: true
-          },
-          {
-            name: "💳 ชำระโดย",
-            value: orderDetails.paymentMethod,
-            inline: true
-          },
-          {
-            name: "👤 ข้อมูลผู้สั่ง",
-            value: `ชื่อ: ${orderDetails.address.fullName}\nเบอร์โทร: ${orderDetails.address.phone}\nที่อยู่: ${orderDetails.address.address}\n${orderDetails.address.note ? "หมายเหตุ: " + orderDetails.address.note : ""}`,
-            inline: false
-          }
-        ],
-        footer: {
-          text: `สั่งซื้อเมื่อ: ${thaiDateTime}`
-        }
-      };
-
-      try {
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: "LocNet Auto Parts",
-            avatar_url: "https://i.imgur.com/AfFp7pu.png",
-            embeds: [embed],
-          }),
-        });
-        if (!response.ok) {
-          throw new Error('ไม่สามารถส่งข้อมูลไปยัง Discord ได้');
-        }
-        console.log('ส่งการแจ้งเตือนไปยัง Discord สำเร็จ');
-      } catch (error) {
-        console.error('เกิดข้อผิดพลาดในการส่งข้อมูล:', error);
-      }
-    }
-
-    /****************************************************
-     * =========== ตะกร้าสินค้า (Cart) ================
-     ****************************************************/
-    function toggleCart() {
-      const cartSidebar = document.getElementById('cartSidebar');
-      cartSidebar.classList.toggle('open');
-      renderCartItems();
-    }
-    function addToCart(productId) {
-      const products = loadProducts();
-      const product = products.find(p => p.id === productId);
-      if(product) {
-        const existed = cart.find(item => item.id === product.id);
-        if(existed) {
-          existed.quantity++;
-        } else {
-          cart.push({ ...product, quantity: 1 });
-        }
-        alert('เพิ่มสินค้าลงตะกร้าแล้ว');
-        updateCartCount();
-      }
-    }
-    function renderCartItems() {
-      const cartItemsDiv = document.getElementById('cartItems');
-      cartItemsDiv.innerHTML = '';
-      let total = 0;
-      const fragment = document.createDocumentFragment();
-      cart.forEach((item, idx) => {
-        const sum = item.price * item.quantity;
-        total += sum;
-        const div = document.createElement('div');
-        div.classList.add('cart-item');
-        div.innerHTML = `
-          <img src="${item.image}" alt="${item.name}" loading="lazy">
-          <div>
-            <h4>${item.name}</h4>
-            <p>ราคา: ฿${item.price}</p>
-            <p>จำนวน:
-              <button class="btn-decrease" data-index="${idx}">-</button>
-              ${item.quantity}
-              <button class="btn-increase" data-index="${idx}">+</button>
-            </p>
-          </div>
-          <div>
-            <p>รวม: ฿${sum}</p>
-            <button class="btn-remove" data-index="${idx}" style="color:red; border:none; background:none; cursor:pointer;">ลบ</button>
-          </div>
-        `;
-        fragment.appendChild(div);
-      });
-      cartItemsDiv.appendChild(fragment);
-      document.getElementById('cartTotal').textContent = '฿' + total.toFixed(2);
-    }
-    function updateCartCount() {
-      const cartCount = document.querySelector('.cart-count');
-      let qty = 0;
-      cart.forEach(item => qty += item.quantity);
-      cartCount.textContent = qty;
-    }
-    function increaseQuantity(index) {
-      cart[index].quantity++;
-      renderCartItems();
-      updateCartCount();
-    }
-    function decreaseQuantity(index) {
-      if(cart[index].quantity > 1) {
-        cart[index].quantity--;
-      }
-      renderCartItems();
-      updateCartCount();
-    }
-    function removeItem(index) {
-      cart.splice(index, 1);
-      renderCartItems();
-      updateCartCount();
-    }
-
-    /****************************************************
-     * ========== ฟีเจอร์ Checkout ใหม่ ================
-     ****************************************************/
-    function checkout() {
-      if(cart.length === 0) {
-        alert('ตะกร้าสินค้าว่าง');
-        return;
-      }
-      // เช็คว่าล็อกอินหรือยัง
-      const user = getCurrentUser();
-      if(!user) {
-        alert('กรุณาเข้าสู่ระบบก่อนทำการสั่งซื้อ');
-        openModal();
-        return;
-      }
-      // เปิดหน้าต่าง checkoutModal แทนการส่ง Discord ทันที
-      openCheckoutModal();
-    }
-
-    function openCheckoutModal() {
-      const user = getCurrentUser();
-      if(user) {
-        // ถ้าต้องการให้ autofill ข้อมูลจากโปรไฟล์
-        document.getElementById('checkoutFullName').value = user.username || "";
-        document.getElementById('checkoutPhone').value = user.phone || "";
-        document.getElementById('checkoutAddress').value = user.address || "";
-      }
-      document.getElementById('checkoutModal').style.display = 'flex';
-    }
-    function closeCheckoutModal() {
-      document.getElementById('checkoutModal').style.display = 'none';
-    }
-
-    function confirmCheckout(e) {
-      e.preventDefault();
-      // เก็บข้อมูลจากฟอร์ม
-      const fullName = document.getElementById('checkoutFullName').value.trim();
-      const phone = document.getElementById('checkoutPhone').value.trim();
-      const addressText = document.getElementById('checkoutAddress').value.trim();
-      const note = document.getElementById('checkoutNote').value.trim();
-      const payment = document.getElementById('checkoutPayment').value;
-
-      let total = 0;
-      cart.forEach(item => { total += item.price * item.quantity; });
-
-      // สร้าง orderDetails สำหรับ Discord
-      const orderDetails = {
-        paymentMethod: payment,
-        address: {
-          fullName: fullName,
-          phone: phone,
-          address: addressText,
-          note: note
-        }
-      };
-
-      // ส่งแจ้งเตือนไป Discord
-      sendToDiscord(cart, total, orderDetails);
-
-      alert('สั่งซื้อเรียบร้อย! ระบบได้รับคำสั่งซื้อแล้ว');
-      closeCheckoutModal();
-      toggleCart(); // ปิดตะกร้า
-      // คุณอาจล้างตะกร้าด้วย
-      cart = [];
-      updateCartCount();
-      renderCartItems();
-    }
-
-    /****************************************************
-     * =========== แสดงสินค้าในหน้าเว็บ (User) =========
-     ****************************************************/
-    function renderProducts() {
-      const productsGrid = document.getElementById('productsGrid');
-      productsGrid.innerHTML = '';
-      const products = loadProducts();
-      const fragment = document.createDocumentFragment();
-      products.forEach(p => {
-        const card = document.createElement('div');
-        card.classList.add('product-card');
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}" class="product-image" data-product-id="${p.id}" loading="lazy">
-          <div class="product-info">
-            <h3>${p.name}</h3>
-            <p>${p.desc}</p>
-            <div class="product-price">฿${p.price}</div>
-          </div>
-          <div class="product-actions">
-            <a href="#" class="action-button action-view-detail" data-product-id="${p.id}">
-              <i class="fas fa-search"></i> ดูรายละเอียด
-            </a>
-            <a href="#" class="action-button action-add-to-cart" data-product-id="${p.id}">
-              <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
-            </a>
-            <a href="#" class="action-button action-like" data-product-id="${p.id}">
-              <i class="fas fa-heart"></i> ถูกใจ
-            </a>
-          </div>
-        `;
-        fragment.appendChild(card);
-      });
-      productsGrid.appendChild(fragment);
-    }
-    function renderAIRecommendations() {
-      const aiGrid = document.getElementById('aiRecommendGrid');
-      aiGrid.innerHTML = '';
-      const recs = getAIRecommendations();
-      const fragment = document.createDocumentFragment();
-      recs.forEach(p => {
-        const card = document.createElement('div');
-        card.classList.add('product-card');
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}" class="product-image" data-product-id="${p.id}" loading="lazy">
-          <div class="product-info">
-            <h3>${p.name}</h3>
-            <p>${p.desc}</p>
-            <div class="product-price">฿${p.price}</div>
-          </div>
-          <div class="product-actions">
-            <a href="#" class="action-button action-view-detail" data-product-id="${p.id}">
-              <i class="fas fa-search"></i> ดูรายละเอียด
-            </a>
-            <a href="#" class="action-button action-add-to-cart" data-product-id="${p.id}">
-              <i class="fas fa-shopping-cart"></i> เพิ่มลงตะกร้า
-            </a>
-            <a href="#" class="action-button action-like" data-product-id="${p.id}">
-              <i class="fas fa-heart"></i> ถูกใจ
-            </a>
-          </div>
-        `;
-        fragment.appendChild(card);
-      });
-      aiGrid.appendChild(fragment);
-    }
-    function getAIRecommendations() {
-      const products = loadProducts();
-      if(!products.length) return [];
-      const shuffled = [...products].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, 2);
-    }
-
-    /****************************************************
-     * ======== Product Detail Modal & Wishlist =========
-     ****************************************************/
-    function openProductDetail(productId) {
-      const products = loadProducts();
-      const product = products.find(p => p.id === productId);
-      if(product) {
-        document.getElementById('detailImage').src = product.image;
-        document.getElementById('detailName').textContent = product.name;
-        document.getElementById('detailDesc').textContent = product.desc;
-        document.getElementById('detailPrice').textContent = '฿' + product.price;
-        document.getElementById('addToCartFromDetail').setAttribute('data-product-id', product.id);
-        document.getElementById('productDetailModal').style.display = 'flex';
-      }
-    }
-    function closeProductDetail() {
-      document.getElementById('productDetailModal').style.display = 'none';
-    }
-    document.getElementById('addToCartFromDetail').addEventListener('click', function(e) {
-      const productId = parseInt(e.target.getAttribute('data-product-id'));
-      addToCart(productId);
-      closeProductDetail();
-    });
-    function toggleLike(productId, btnElement) {
-      let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-      if(wishlist.includes(productId)) {
-        wishlist = wishlist.filter(id => id !== productId);
-        alert('นำออกจากรายการถูกใจแล้ว');
-        btnElement.classList.remove('liked');
-      } else {
-        wishlist.push(productId);
-        alert('เพิ่มลงในรายการถูกใจแล้ว');
-        btnElement.classList.add('liked');
-      }
-      localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    }
-
-    /****************************************************
-     * ========= Dark Mode Toggle Function =========
-     ****************************************************/
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      const themeToggleBtn = document.getElementById('themeToggle');
-      if(document.body.classList.contains('dark-mode')) {
-        themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> โหมดสว่าง';
-      } else {
-        themeToggleBtn.innerHTML = '<i class="fas fa-adjust"></i> โหมดมืด';
-      }
-    }
-
-    /****************************************************
-     * ============== Admin Panel (ใช้รหัส 2934) ========
-     ****************************************************/
-    let editingProductId = null;
-    function openAdminPanel() {
-      const pass = prompt("กรุณาใส่รหัสผ่านสำหรับ Admin:");
-      if(pass === "2934") {
-        document.getElementById('adminPanel').style.display = 'flex';
-        document.getElementById('productForm').reset();
-        document.getElementById('editProductId').value = '';
-        document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
-        document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
-        editingProductId = null;
-        renderAdminProductList();
-      } else {
-        if(pass !== null) {
-          alert("รหัสผ่านไม่ถูกต้อง!");
-        }
-      }
-    }
-    function closeAdminPanel() {
-      document.getElementById('adminPanel').style.display = 'none';
-    }
-    function renderAdminProductList() {
-      const adminList = document.getElementById('adminProductList');
-      adminList.innerHTML = '';
-      const products = loadProducts();
-      const table = document.createElement('table');
-      table.style.width = '100%';
-      table.style.borderCollapse = 'collapse';
-      table.innerHTML = `
-        <thead>
-          <tr style="background:#f0f0f0">
-            <th style="padding:8px;">ID</th>
-            <th style="padding:8px;">สินค้า</th>
-            <th style="padding:8px;">ราคา</th>
-            <th style="padding:8px;">แก้ไข</th>
-            <th style="padding:8px;">ลบ</th>
-          </tr>
-        </thead>
-        <tbody id="adminTableBody"></tbody>
-      `;
-      adminList.appendChild(table);
-      const tbody = document.getElementById('adminTableBody');
-      products.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td style="padding:8px;">${p.id}</td>
-          <td style="padding:8px;">
-            <strong>${p.name}</strong><br/>
-            <small>${p.desc}</small>
-          </td>
-          <td style="padding:8px;">฿${p.price}</td>
-          <td style="padding:8px;">
-            <button class="btn-secondary" onclick="editProduct(${p.id})">แก้ไข</button>
-          </td>
-          <td style="padding:8px;">
-            <button class="btn-danger" onclick="deleteProduct(${p.id})">ลบ</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-    function editProduct(productId) {
-      const products = loadProducts();
-      const prod = products.find(x => x.id === productId);
-      if(!prod) return;
-      editingProductId = prod.id;
-      document.getElementById('editProductId').value = prod.id;
-      document.getElementById('productName').value = prod.name;
-      document.getElementById('productDesc').value = prod.desc;
-      document.getElementById('productPrice').value = prod.price;
-      document.getElementById('adminTitle').textContent = 'แก้ไขสินค้า';
-      document.getElementById('productFormBtn').textContent = 'บันทึกการแก้ไข';
-    }
-    function handleProductSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('productName').value.trim();
-      const desc = document.getElementById('productDesc').value.trim();
-      const price = document.getElementById('productPrice').value.trim();
-      const imageFile = document.getElementById('productImage').files[0];
-      let products = loadProducts();
-      if(editingProductId) {
-        const idx = products.findIndex(p => p.id === editingProductId);
-        if(idx === -1) return;
-        if(imageFile) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const base64Image = event.target.result;
-            products[idx].name = name;
-            products[idx].desc = desc;
-            products[idx].price = Number(price);
-            products[idx].image = base64Image;
-            saveProducts(products);
-            alert("แก้ไขสินค้าเรียบร้อย");
-            renderProducts();
-            renderAdminProductList();
-            e.target.reset();
-            editingProductId = null;
-            document.getElementById('editProductId').value = '';
-            document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
-            document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
-          };
-          reader.readAsDataURL(imageFile);
-        } else {
-          products[idx].name = name;
-          products[idx].desc = desc;
-          products[idx].price = Number(price);
-          saveProducts(products);
-          alert("แก้ไขสินค้าเรียบร้อย");
-          renderProducts();
-          renderAdminProductList();
-          e.target.reset();
-          editingProductId = null;
-          document.getElementById('editProductId').value = '';
-          document.getElementById('adminTitle').textContent = 'เพิ่ม/แก้ไข สินค้า';
-          document.getElementById('productFormBtn').textContent = 'บันทึกสินค้า';
-        }
-      } else {
-        if(!imageFile) {
-          alert("กรุณาอัปโหลดรูปสินค้า");
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64Image = event.target.result;
-          const newId = products.length ? (products[products.length - 1].id + 1) : 1;
-          const newProduct = {
-            id: newId, name, desc, price: Number(price), image: base64Image
-          };
-          products.push(newProduct);
-          saveProducts(products);
-          alert("เพิ่มสินค้าเรียบร้อย");
-          renderProducts();
-          renderAdminProductList();
-          e.target.reset();
-        };
-        reader.readAsDataURL(imageFile);
-      }
-    }
-    function deleteProduct(id) {
-      if(!confirm("คุณต้องการลบสินค้านี้หรือไม่?")) return;
-      let products = loadProducts();
-      products = products.filter(p => p.id !== id);
-      saveProducts(products);
-      alert("ลบสินค้าเรียบร้อย");
-      renderProducts();
-      renderAdminProductList();
-    }
-
-    /****************************************************
-     * ========== Event Delegation for Dynamic Elements ==========
-     ****************************************************/
-    document.getElementById('productsGrid').addEventListener('click', function(e) {
-      const viewBtn = e.target.closest('.action-view-detail');
-      if(viewBtn) {
-        e.preventDefault();
-        const productId = parseInt(viewBtn.getAttribute('data-product-id'));
-        openProductDetail(productId);
-        return;
-      }
-      const addBtn = e.target.closest('.action-add-to-cart');
-      if(addBtn) {
-        e.preventDefault();
-        const productId = parseInt(addBtn.getAttribute('data-product-id'));
-        addToCart(productId);
-        return;
-      }
-      const likeBtn = e.target.closest('.action-like');
-      if(likeBtn) {
-        e.preventDefault();
-        const productId = parseInt(likeBtn.getAttribute('data-product-id'));
-        toggleLike(productId, likeBtn);
-        return;
-      }
-    });
-    document.getElementById('aiRecommendGrid').addEventListener('click', function(e) {
-      const viewBtn = e.target.closest('.action-view-detail');
-      if(viewBtn) {
-        e.preventDefault();
-        const productId = parseInt(viewBtn.getAttribute('data-product-id'));
-        openProductDetail(productId);
-        return;
-      }
-      const addBtn = e.target.closest('.action-add-to-cart');
-      if(addBtn) {
-        e.preventDefault();
-        const productId = parseInt(addBtn.getAttribute('data-product-id'));
-        addToCart(productId);
-        return;
-      }
-      const likeBtn = e.target.closest('.action-like');
-      if(likeBtn) {
-        e.preventDefault();
-        const productId = parseInt(likeBtn.getAttribute('data-product-id'));
-        toggleLike(productId, likeBtn);
-        return;
-      }
-    });
-    document.getElementById('cartItems').addEventListener('click', function(e) {
-      if(e.target.closest('.btn-decrease')) {
-        e.preventDefault();
-        const index = parseInt(e.target.closest('.btn-decrease').getAttribute('data-index'));
-        decreaseQuantity(index);
-      }
-      if(e.target.closest('.btn-increase')) {
-        e.preventDefault();
-        const index = parseInt(e.target.closest('.btn-increase').getAttribute('data-index'));
-        increaseQuantity(index);
-      }
-      if(e.target.closest('.btn-remove')) {
-        e.preventDefault();
-        const index = parseInt(e.target.closest('.btn-remove').getAttribute('data-index'));
-        removeItem(index);
-      }
-    });
-
-    /****************************************************
-     * ========== onLoad & Service Worker Registration ==========
-     ****************************************************/
-    window.onload = function() {
-      const user = getCurrentUser();
-      if(user) { updateUIAfterLogin(user); }
-      renderProducts();
-      renderAIRecommendations();
-    };
-    window.onclick = function(e) {
-      const authModal = document.getElementById('authModal');
-      const adminPanel = document.getElementById('adminPanel');
-      const productDetailModal = document.getElementById('productDetailModal');
-      const checkoutModal = document.getElementById('checkoutModal');
-      if(e.target === authModal) closeModal();
-      if(e.target === adminPanel) closeAdminPanel();
-      if(e.target === productDetailModal) closeProductDetail();
-      if(e.target === checkoutModal) closeCheckoutModal();
-    };
-
-    if ('serviceWorker' in navigator) {
-      const swCode = `
-        const CACHE_NAME = 'locnet-cache-v1';
-        const urlsToCache = [
-          '/',
-        ];
-        self.addEventListener('install', function(event) {
-          event.waitUntil(
-            caches.open(CACHE_NAME).then(function(cache) {
-              return cache.addAll(urlsToCache);
-            })
-          );
-        });
-        self.addEventListener('fetch', function(event) {
-          event.respondWith(
-            caches.match(event.request).then(function(response) {
-              return response || fetch(event.request);
-            })
-          );
-        });
-      `;
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl)
-        .then(function(registration) {
-          console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch(function(error) {
-          console.log('Service Worker registration failed:', error);
-        });
-    }
   </script>
+
+  <!-- Main Script -->
+  <script src="/script.js"></script>
 </body>
 </html>
