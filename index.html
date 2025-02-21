@@ -25,40 +25,29 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 
-  <!-- CDN Scripts -->
-  <!-- โหลด Supabase จาก jsDelivr -->
+  <!-- โหลด Supabase UMD + TensorFlow + EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js" defer></script>
 
-  <!-- กำหนด Supabase Client -->
-  <script>
+  <!-- กำหนด Supabase Client ทันที (ไม่ต้องรอ window.load) -->
+  <script defer>
     console.log('Starting Supabase initialization...');
-    window.addEventListener('load', function () {
-      // รอให้ Supabase SDK โหลด
-      const checkSupabase = () => new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Supabase SDK timeout')), 10000);
-        const interval = setInterval(() => {
-          // สำคัญ: เช็คว่ามีตัวแปร supabase (ตัว s เล็ก) หรือยัง
-          if (typeof supabase !== 'undefined') {
-            clearInterval(interval);
-            clearTimeout(timeout);
-            console.log('Supabase SDK loaded');
-            resolve();
-          }
-        }, 100);
-      });
+    // จะเรียกหลังจาก DOM โหลดเสร็จ (เพราะใส่ defer)
+    document.addEventListener('DOMContentLoaded', () => {
+      // ตรวจสอบว่า supabase (ตัว s เล็ก) ถูกโหลดหรือยัง
+      if (typeof supabase === 'undefined') {
+        console.error('Supabase SDK not found');
+        alert('ไม่สามารถโหลด Supabase SDK ได้');
+        return;
+      }
+      // ใส่ค่า URL และ KEY ของคุณ
+      const SUPABASE_URL = "https://auhxtlpiyfscdymddabc.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";
 
-      checkSupabase()
-        .then(() => {
-          // ใส่ค่า URL และ KEY ของคุณให้ถูกต้อง
-          const SUPABASE_URL = "https://auhxtlpiyfscdymddabc.supabase.co";
-          const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";
-
-          // สำคัญ: ใช้ supabase (ตัว s เล็ก) เพื่อสร้าง Client
-          window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          console.log('Supabase client initialized successfully');
-        })
+      window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('Supabase client initialized successfully');
+    });
         .catch((err) => {
           console.error('Failed to initialize Supabase:', err);
           alert('ไม่สามารถเชื่อมต่อ Supabase ได้ กรุณาลองใหม่');
