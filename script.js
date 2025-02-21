@@ -4,14 +4,13 @@
  * =========== เชื่อมต่อกับ Supabase ================
  ****************************************************/
 document.addEventListener('DOMContentLoaded', async () => {
-  // รอจนกว่า Supabase จะโหลด
   const checkSupabase = () => new Promise((resolve) => {
     const interval = setInterval(() => {
       if (typeof Supabase !== 'undefined') {
         clearInterval(interval);
         resolve();
       }
-    }, 100); // ตรวจสอบทุก 100ms
+    }, 100);
   });
 
   try {
@@ -19,13 +18,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // *** แทนที่ด้วย Supabase URL และ Anon Key จริงจาก Supabase Dashboard ***
     const SUPABASE_URL =  "https://auhxtlpiyfscdymddabc.supabase.co"; // แทนที่ด้วย URL จริง
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";// แทนที่ด้วย Anon Key จจริง
-    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    window.supabase = supabase;
+    window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // สร้าง client
     console.log('Supabase initialized successfully');
   } catch (err) {
     console.error('Supabase failed to load:', err);
     alert('ไม่สามารถโหลด Supabase ได้ กรุณาลองใหม่หรือตรวจสอบการเชื่อมต่อ');
-    return; // หยุดการทำงานถ้า Supabase ล้มเหลว
+    return;
   }
 
   // เรียกฟังก์ชันเริ่มต้นหลังจาก Supabase พร้อม
@@ -38,26 +36,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       await updateCartCount();
     } catch (err) {
       console.error('Error during page load:', err);
-      alert('เกิดข้อผิดพลาดในการโหลดหน้า กรุณาลองใหม่');
     }
   };
 });
 
 function ensureSupabase() {
-  return new Promise((resolve) => {
-    const check = () => {
-      if (window.supabase) resolve();
-      else setTimeout(check, 100); // ตรวจสอบทุก 100ms
-    };
-    check();
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      reject(new Error('Supabase initialization timed out'));
+    }, 10000); // รอสูงสุด 10 วินาที
+    const interval = setInterval(() => {
+      if (window.supabase) {
+        clearInterval(interval);
+        clearTimeout(timeout);
+        resolve();
+      }
+    }, 100);
   });
 }
 
 async function getCurrentUser() {
-  await ensureSupabase();
   if (!window.supabase) {
-    throw new Error('Supabase not initialized after retry');
+    console.error('Supabase not initialized');
+    return null;
   }
+  await ensureSupabase();
   try {
     const { data: { user } } = await window.supabase.auth.getUser();
     return user || null;
@@ -1768,14 +1772,14 @@ async function handleConfirmPayment() {
  * Product Functions
  ****************************************************/
 async function loadProducts() {
+  if (!window.supabase) {
+    console.error('Supabase not initialized');
+    return [];
+  }
   await ensureSupabase();
-  if (!window.supabase) throw new Error('Supabase not initialized');
   try {
     const { data: products, error } = await window.supabase.from("products").select("*");
-    if (error) {
-      console.error("loadProducts error:", error);
-      return [];
-    }
+    if (error) throw error;
     return products;
   } catch (err) {
     console.error('Error loading products:', err);
