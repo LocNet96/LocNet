@@ -4,42 +4,26 @@
  * =========== เชื่อมต่อกับ Supabase ================
  ****************************************************/
 document.addEventListener('DOMContentLoaded', async () => {
-  const checkSupabase = () => new Promise((resolve) => {
-    const interval = setInterval(() => {
-      if (typeof Supabase !== 'undefined') {
-        clearInterval(interval);
-        resolve();
-      }
-    }, 100);
-  });
-
-  try {
-    await checkSupabase();
-    // *** แทนที่ด้วย Supabase URL และ Anon Key จริงจาก Supabase Dashboard ***
-    const SUPABASE_URL =  "https://auhxtlpiyfscdymddabc.supabase.co"; // แทนที่ด้วย URL จริง
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";// แทนที่ด้วย Anon Key จจริง
-    window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // สร้าง client
-    console.log('Supabase initialized successfully');
-  } catch (err) {
-    console.error('Supabase failed to load:', err);
-    alert('ไม่สามารถโหลด Supabase ได้ กรุณาลองใหม่หรือตรวจสอบการเชื่อมต่อ');
+  // ตรวจสอบว่า Supabase client โหลดสำเร็จจาก index.html หรือไม่
+  if (!window.supabase) {
+    console.error('Supabase client not initialized');
+    alert('ไม่สามารถเชื่อมต่อระบบได้ กรุณารีเฟรชหน้า');
     return;
   }
 
-  // เรียกฟังก์ชันเริ่มต้นหลังจาก Supabase พร้อม
-  window.onload = async function () {
-    try {
-      const user = await getCurrentUser();
-      if (user) updateUIAfterLogin(user);
-      await renderProducts();
-      await renderAIRecommendations();
-      await updateCartCount();
-    } catch (err) {
-      console.error('Error during page load:', err);
-    }
-  };
+  // ดำเนินการโหลดหน้าเมื่อ DOM และ Supabase พร้อม
+  try {
+    const user = await getCurrentUser();
+    if (user) updateUIAfterLogin(user);
+    await renderProducts();
+    await renderAIRecommendations();
+    await updateCartCount();
+  } catch (err) {
+    console.error('Error during page load:', err);
+  }
 });
 
+// ฟังก์ชันรอ Supabase หากจำเป็น (ใช้ในกรณีที่อาจมีการหน่วงเวลา)
 function ensureSupabase() {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -56,13 +40,14 @@ function ensureSupabase() {
   });
 }
 
+// ฟังก์ชันดึงข้อมูลผู้ใช้ปัจจุบัน
 async function getCurrentUser() {
   if (!window.supabase) {
     console.error('Supabase not initialized');
     return null;
   }
-  await ensureSupabase();
   try {
+    await ensureSupabase(); // รอให้แน่ใจว่า Supabase พร้อมจริงๆ
     const { data: { user } } = await window.supabase.auth.getUser();
     return user || null;
   } catch (err) {
