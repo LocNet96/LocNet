@@ -8,7 +8,7 @@ async function initializeApp() {
   if (!window.supabase) {
     try {
       await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Supabase not ready')), 20000); // รอ 20 วินาที
+        const timeout = setTimeout(() => reject(new Error('Supabase not ready')), 10000);
         const interval = setInterval(() => {
           if (window.supabase) {
             clearInterval(interval);
@@ -1771,14 +1771,6 @@ async function loadProducts() {
     return [];
   }
 }
-
-// แก้ไข escapeHTML ให้แน่ใจว่าไม่มี syntax error
-function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, function(match) {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
-  });
-}
-
 async function renderProductsList(products) {
   const productsGrid = document.getElementById("productsGrid");
   productsGrid.innerHTML = "";
