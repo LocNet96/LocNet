@@ -3,28 +3,56 @@
 /****************************************************
  * =========== เชื่อมต่อกับ Supabase ================
  ****************************************************/
+document.addEventListener('DOMContentLoaded', async () => {
+  // รอจนกว่า Supabase จะโหลด
+  const checkSupabase = () => new Promise((resolve) => {
+    const interval = setInterval(() => {
+      if (typeof Supabase !== 'undefined') {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 100); // ตรวจสอบทุก 100ms
+  });
 
-// *** แทนที่ด้วย Supabase URL และ Anon Key จริงจาก Supabase Dashboard ***
-const SUPABASE_URL = "https://auhxtlpiyfscdymddabc.supabase.co"; // เช่น 'https://xyz.supabase.co'
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";// เช่น 'eyJhbGciOi...'
+  try {
+    await checkSupabase();
+    // *** แทนที่ด้วย Supabase URL และ Anon Key จริงจาก Supabase Dashboard ***
+    const SUPABASE_URL =  "https://auhxtlpiyfscdymddabc.supabase.co"; // แทนที่ด้วย URL จริง
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";// แทนที่ด้วย Anon Key จจริง
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabase = supabase;
+    console.log('Supabase initialized successfully');
+  } catch (err) {
+    console.error('Supabase failed to load:', err);
+    alert('ไม่สามารถโหลด Supabase ได้ กรุณาลองใหม่หรือตรวจสอบการเชื่อมต่อ');
+  }
+});
 
-// รอให้ Supabase โหลดจาก CDN ก่อนกำหนด
-if (typeof Supabase === 'undefined') {
-  console.error('Supabase CDN not loaded yet');
-} else {
-  const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.supabase = supabase; // ทำให้ใช้งานได้ทั่วไป
+function ensureSupabase() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (window.supabase) resolve();
+      else setTimeout(check, 100); // ตรวจสอบทุก 100ms
+    };
+    check();
+  });
 }
 
 async function getCurrentUser() {
+  await ensureSupabase();
   if (!window.supabase) {
-    console.error('Supabase not initialized');
+    throw new Error('Supabase not initialized after retry');
+  }
+  try {
+    const { data: { user } } = await window.supabase.auth.getUser();
+    return user || null;
+  } catch (err) {
+    console.error('Error getting current user:', err);
     return null;
   }
-  const { data: { user } } = await window.supabase.auth.getUser();
-  return user || null;
 }
 
+// ฟังก์ชันอื่นๆ ใน script.js สามารถเรียกใช้ getCurrentUser ได้ตามปกติ
 async function syncUserBehavior(behaviorData) {
   try {
     const formattedData = [];
