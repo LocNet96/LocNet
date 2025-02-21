@@ -26,17 +26,14 @@
   <link rel="stylesheet" href="styles.css">
 
   <!-- CDN Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js" defer></script>
-
-  <!-- กำหนด Supabase Client -->
   <script>
     console.log('Starting Supabase initialization...');
     window.addEventListener('load', function () {
-      // รอให้ Supabase SDK โหลด
       const checkSupabase = () => new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Supabase SDK timeout')), 10000);
+        const timeout = setTimeout(() => reject(new Error('Supabase SDK timeout')), 15000);
         const interval = setInterval(() => {
           if (typeof Supabase !== 'undefined') {
             clearInterval(interval);
@@ -47,18 +44,41 @@
         }, 100);
       });
 
-      checkSupabase()
-        .then(() => {
-          // แทนที่ด้วย URL และ Anon Key จริงจาก Supabase Dashboard
-          const SUPABASE_URL =  "https://auhxtlpiyfscdymddabc.supabase.co"; // ตัวอย่าง URL
-          const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ"; // แทนที่ด้วย Anon Key จริง
-          window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          console.log('Supabase client initialized successfully');
-        })
-        .catch((err) => {
-          console.error('Failed to initialize Supabase:', err);
-          alert('ไม่สามารถเชื่อมต่อ Supabase ได้ กรุณาลองใหม่');
-        });
+      // ลองโหลดจาก CDN หลักก่อน
+      const mainScript = document.createElement('script');
+      mainScript.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
+      mainScript.onload = () => {
+        checkSupabase()
+          .then(() => {
+            const SUPABASE_URL ="https://auhxtlpiyfscdymddabc.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ"; // ใส่คีย์จริง
+            window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+          })
+          .catch((err) => {
+            console.error('Failed to initialize Supabase:', err);
+            const backupScript = document.createElement('script');
+            backupScript.src = 'https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';
+            backupScript.onload = () => {
+              console.log('Loaded Supabase from backup CDN');
+              // แทนที่ด้วย URL และ Anon Key จริงจาก Supabase Dashboard
+              const SUPABASE_URL =  "https://auhxtlpiyfscdymddabc.supabase.co"; // ตัวอย่าง URL
+              const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ"; // แทนที่ด้วย Anon Key จริง
+              window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+              console.log('Supabase client initialized from backup');
+            };
+            backupScript.onerror = () => {
+              console.error('Backup CDN failed too');
+              alert('ไม่สามารถเชื่อมต่อ Supabase ได้ กรุณาตรวจสอบการเชื่อมต่อหรือลองใหม่');
+            };
+            document.head.appendChild(backupScript);
+          });
+      };
+      mainScript.onerror = () => {
+        console.error('Main CDN failed, trying backup...');
+        document.head.appendChild(backupScript);
+      };
+      document.head.appendChild(mainScript);
     });
   </script>
 </head>
