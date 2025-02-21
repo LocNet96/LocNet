@@ -30,24 +30,28 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-
-  <!-- กำหนดค่า Supabase Client ทันทีหลังโหลด SDK -->
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // รอให้ Supabase SDK โหลดเสร็จ
-      const checkSupabase = () => new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Supabase SDK timeout')), 10000);
-        const interval = setInterval(() => {
-          if (typeof Supabase !== 'undefined') {
-            clearInterval(interval);
-            clearTimeout(timeout);
-            resolve();
-          }
-        }, 100);
-      });
+  console.log('Starting Supabase initialization...');
+  if (typeof Supabase === 'undefined') {
+    console.error('Supabase SDK not loaded yet');
+  } else {
+    console.log('Supabase SDK loaded successfully');
+  }
 
-      checkSupabase()
-        .then(() => {
+  document.addEventListener('DOMContentLoaded', function () {
+    const checkSupabase = () => new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Supabase SDK timeout')), 10000);
+      const interval = setInterval(() => {
+        if (typeof Supabase !== 'undefined') {
+          clearInterval(interval);
+          clearTimeout(timeout);
+          resolve();
+        }
+      }, 100);
+    });
+
+    checkSupabase()
+      .then(() => {
           // แทนที่ด้วย URL และ Anon Key จริงจาก Supabase Dashboard
           const SUPABASE_URL =  "https://auhxtlpiyfscdymddabc.supabase.co"; // ตัวอย่าง URL
           const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ"; // แทนที่ด้วย Anon Key จริง
