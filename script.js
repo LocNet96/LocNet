@@ -25,7 +25,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Supabase failed to load:', err);
     alert('ไม่สามารถโหลด Supabase ได้ กรุณาลองใหม่หรือตรวจสอบการเชื่อมต่อ');
+    return; // หยุดการทำงานถ้า Supabase ล้มเหลว
   }
+
+  // เรียกฟังก์ชันเริ่มต้นหลังจาก Supabase พร้อม
+  window.onload = async function () {
+    try {
+      const user = await getCurrentUser();
+      if (user) updateUIAfterLogin(user);
+      await renderProducts();
+      await renderAIRecommendations();
+      await updateCartCount();
+    } catch (err) {
+      console.error('Error during page load:', err);
+      alert('เกิดข้อผิดพลาดในการโหลดหน้า กรุณาลองใหม่');
+    }
+  };
 });
 
 function ensureSupabase() {
@@ -1753,14 +1768,20 @@ async function handleConfirmPayment() {
  * Product Functions
  ****************************************************/
 async function loadProducts() {
-  const { data: products, error } = await window.supabase.from("products").select("*");
-  if (error) {
-    console.error("loadProducts error:", error);
+  await ensureSupabase();
+  if (!window.supabase) throw new Error('Supabase not initialized');
+  try {
+    const { data: products, error } = await window.supabase.from("products").select("*");
+    if (error) {
+      console.error("loadProducts error:", error);
+      return [];
+    }
+    return products;
+  } catch (err) {
+    console.error('Error loading products:', err);
     return [];
   }
-  return products;
 }
-
 async function renderProductsList(products) {
   const productsGrid = document.getElementById("productsGrid");
   productsGrid.innerHTML = "";
