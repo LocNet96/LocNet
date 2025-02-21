@@ -4,7 +4,7 @@
  * =========== เชื่อมต่อกับ Supabase ================
  ****************************************************/
 async function initializeApp() {
-  // รอให้ Supabase พร้อม
+  console.log('Waiting for Supabase client...');
   if (!window.supabase) {
     try {
       await new Promise((resolve, reject) => {
@@ -13,6 +13,7 @@ async function initializeApp() {
           if (window.supabase) {
             clearInterval(interval);
             clearTimeout(timeout);
+            console.log('Supabase client ready');
             resolve();
           }
         }, 100);
@@ -24,7 +25,6 @@ async function initializeApp() {
     }
   }
 
-  // เริ่มโหลดข้อมูลเมื่อ Supabase พร้อม
   try {
     console.log('Starting app initialization...');
     const user = await getCurrentUser();
@@ -39,12 +39,10 @@ async function initializeApp() {
   }
 }
 
-// เรียกเมื่อ DOM โหลดเสร็จ
 document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 });
 
-// ฟังก์ชันดึงข้อมูลผู้ใช้
 async function getCurrentUser() {
   if (!window.supabase) {
     console.error('Supabase not initialized in getCurrentUser');
@@ -1774,6 +1772,12 @@ async function loadProducts() {
     console.error('Error loading products:', err);
     return [];
   }
+}
+// ตรวจสอบ syntax error ใน escapeHTML
+function escapeHTML(str) {
+  return String(str).replace(/[&<>"']/g, function(match) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
+  });
 }
 async function renderProductsList(products) {
   const productsGrid = document.getElementById("productsGrid");
