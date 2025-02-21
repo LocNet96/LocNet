@@ -8,7 +8,7 @@ async function initializeApp() {
   if (!window.supabase) {
     try {
       await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Supabase not ready')), 10000);
+        const timeout = setTimeout(() => reject(new Error('Supabase not ready')), 20000); // รอ 20 วินาที
         const interval = setInterval(() => {
           if (window.supabase) {
             clearInterval(interval);
@@ -57,7 +57,6 @@ async function getCurrentUser() {
     return null;
   }
 }
-
 // ฟังก์ชันอื่นๆ ใน script.js สามารถเรียกใช้ getCurrentUser ได้ตามปกติ
 async function syncUserBehavior(behaviorData) {
   try {
@@ -1758,7 +1757,6 @@ async function handleConfirmPayment() {
 /****************************************************
  * Product Functions
  ****************************************************/
-/ ฟังก์ชันโหลดสินค้า
 async function loadProducts() {
   if (!window.supabase) {
     console.error('Supabase not initialized in loadProducts');
@@ -1773,12 +1771,14 @@ async function loadProducts() {
     return [];
   }
 }
-// ตรวจสอบ syntax error ใน escapeHTML
+
+// แก้ไข escapeHTML ให้แน่ใจว่าไม่มี syntax error
 function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, function(match) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
   });
 }
+
 async function renderProductsList(products) {
   const productsGrid = document.getElementById("productsGrid");
   productsGrid.innerHTML = "";
