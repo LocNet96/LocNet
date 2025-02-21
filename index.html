@@ -2,14 +2,14 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <!-- Content Security Policy (CSP) ปรับให้รองรับ CDN และฟังก์ชันทั้งหมด -->
+  <!-- ปรับ CSP ให้ครอบคลุมและยืดหยุ่นมากขึ้น -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.emailjs.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
     font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdnjs.cloudflare.com;
-    img-src 'self' data: https://placehold.co https://via.placeholder.com https://auhxtlpiyfscdymddabc.supabase.co;
-    connect-src 'self' https://discord.com/api/webhooks/1336992146145673257/_ednBAPdn4Bo9ml2MkcLJQoGzaNBxMKveJqMBksdWmWpE5MIFzaOGepODtCheOHqZYLv https://api.emailjs.com https://auhxtlpiyfscdymddabc.supabase.co;
+    img-src 'self' data: https://placehold.co https://via.placeholder.com https://*.supabase.co;
+    connect-src 'self' https://discord.com/api/webhooks/1336992146145673257/_ednBAPdn4Bo9ml2MkcLJQoGzaNBxMKveJqMBksdWmWpE5MIFzaOGepODtCheOHqZYLv https://api.emailjs.com https://*.supabase.co wss://*.supabase.co;
     object-src 'none';
     frame-src 'none';
     base-uri 'self';
@@ -26,10 +26,40 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 
-  <!-- CDN Scripts ที่จำเป็น -->
+  <!-- CDN Scripts ที่จำเป็น (โหลดครั้งเดียวใน head) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+  <!-- กำหนดค่า Supabase Client ทันทีหลังโหลด SDK -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // รอให้ Supabase SDK โหลดเสร็จ
+      const checkSupabase = () => new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Supabase SDK timeout')), 10000);
+        const interval = setInterval(() => {
+          if (typeof Supabase !== 'undefined') {
+            clearInterval(interval);
+            clearTimeout(timeout);
+            resolve();
+          }
+        }, 100);
+      });
+
+      checkSupabase()
+        .then(() => {
+          // แทนที่ด้วย URL และ Anon Key จริงจาก Supabase Dashboard
+          const SUPABASE_URL =  "https://auhxtlpiyfscdymddabc.supabase.co"; // ตัวอย่าง URL
+          const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ"; // แทนที่ด้วย Anon Key จริง
+          window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          console.log('Supabase client initialized successfully');
+        })
+        .catch((err) => {
+          console.error('Failed to initialize Supabase:', err);
+          alert('ไม่สามารถเชื่อมต่อ Supabase ได้ กรุณาลองใหม่');
+        });
+    });
+  </script>
 </head>
 <body>
   <!-- Header -->
@@ -46,7 +76,7 @@
         <a href="#promotions">โปรโมชั่น</a>
         <a href="#blog">บล็อก</a>
         <a href="#contact">ติดต่อ</a>
-        <a href="#" onclick="openAdminPanel()">Admin</a> <!-- เพิ่มลิงก์ Admin -->
+        <a href="#" onclick="openAdminPanel()">Admin</a>
       </div>
       <div class="user-actions">
         <span id="userGreeting"></span>
@@ -427,7 +457,6 @@
   </script>
 
   <!-- Main Script -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
