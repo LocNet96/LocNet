@@ -475,7 +475,7 @@ class MLSystem {
       const labels = [];
       products.forEach(product => {
         data.push({
-          views: behavior.productViews.[product.id] || 0,
+          views: behavior.productViews?.[product.id] || 0,
           searches: 0,
           purchases: behavior.purchases?.filter(p => p.items.some(i => i.id === product.id)).length || 0,
           price: product.price,
