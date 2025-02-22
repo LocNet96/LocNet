@@ -3,68 +3,34 @@
 /****************************************************
  * =========== เชื่อมต่อกับ Supabase ================
  ****************************************************/
-// เรียกใช้การเริ่มต้นแอป
-async function initializeApp() {
-  console.log('Waiting for Supabase client...');
-  if (!window.supabase) {
-    try {
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Supabase not ready')), 10000);
-        const interval = setInterval(() => {
-          if (window.supabase) {
-            clearInterval(interval);
-            clearTimeout(timeout);
-            console.log('Supabase client ready');
-            resolve();
-          }
-        }, 100);
-      });
-    } catch (err) {
-      console.error('Supabase initialization failed:', err);
-      alert('ไม่สามารถเชื่อมต่อระบบได้ กรุณารีเฟรชหน้า');
-      return;
-    }
-  }
 
-  try {
-    console.log('Starting app initialization...');
-    const user = await getCurrentUser();
-    if (user) updateUIAfterLogin(user);
+// *** แทนที่ด้วย Supabase URL และ Anon Key จริงจาก Supabase Dashboard ***
+const SUPABASE_URL = "https://auhxtlpiyfscdymddabc.supabase.co"; // เช่น 'https://xyz.supabase.co'
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";// เช่น 'eyJhbGciOi...'
 
-    await renderProducts();
-    await renderAIRecommendations();
-    await updateCartCount();
-    console.log('App initialized successfully');
-  } catch (err) {
-    console.error('Error during app initialization:', err);
-    alert('เกิดข้อผิดพลาดในการโหลดหน้า: ' + err.message);
-  }
+// รอให้ Supabase โหลดจาก CDN ก่อนกำหนด
+if (typeof supabase === 'undefined') {
+  console.error('Supabase CDN not loaded yet');
+} else {
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.supabase = supabase; // ทำให้ใช้งานได้ทั่วไป
 }
 
-// ฟังก์ชันดึง User จาก Supabase
 async function getCurrentUser() {
   if (!window.supabase) {
-    console.error('Supabase not initialized in getCurrentUser');
+    console.error('Supabase not initialized');
     return null;
   }
-  try {
-    const { data: { user }, error } = await window.supabase.auth.getUser();
-    if (error) throw error;
-    return user || null;
-  } catch (err) {
-    console.error('Error getting current user:', err);
-    return null;
-  }
+  const { data: { user } } = await window.supabase.auth.getUser();
+  return user || null;
 }
 
-/****************************************************
- * ฟังก์ชัน Synch ข้อมูล AI/Model ไปยัง Supabase
- ****************************************************/
 async function syncUserBehavior(behaviorData) {
   try {
     const formattedData = [];
     const user = await getCurrentUser();
     const userId = (user && user.id) ? user.id : null;
+
 
     if (!userId) {
       console.warn("No user authenticated for syncUserBehavior");
@@ -192,6 +158,7 @@ async function syncDataAfterTraining() {
 /****************************************************
  * LocNetAI Class
  ****************************************************/
+
 class LocNetAI {
   constructor() {
     this.storageKeys = {
@@ -217,7 +184,6 @@ class LocNetAI {
   }
 
   initializeTracking() {
-    // ใส่ Listener กับทุก product-card ถ้ามีใน DOM ตอนเรียกใช้งาน
     document.querySelectorAll('.product-card').forEach((card) => {
       card.addEventListener('click', async (e) => {
         await this.trackProductView(e);
@@ -232,7 +198,6 @@ class LocNetAI {
     const cartSidebar = document.getElementById('cartSidebar');
     if (cartSidebar) {
       cartSidebar.addEventListener('click', async (e) => {
-        // สมมติว่าถ้ามีปุ่มสั่งซื้อ หรือชำระเงินเป็น .btn-primary
         if (e.target.matches('.btn-primary')) {
           await this.trackPurchase(e);
         }
@@ -250,8 +215,6 @@ class LocNetAI {
       if (!behavior.productViews[productId]) behavior.productViews[productId] = 0;
       behavior.productViews[productId]++;
       localStorage.setItem(this.storageKeys.userBehavior, JSON.stringify(behavior));
-
-      // อัปเดต Recommendations + Sync
       await this.updateRecommendations();
       await syncDataAfterTraining();
     } catch (error) {
@@ -269,7 +232,6 @@ class LocNetAI {
       behavior.searches.push({ term: searchTerm, timestamp: Date.now() });
       if (behavior.searches.length > 100) behavior.searches = behavior.searches.slice(-100);
       localStorage.setItem(this.storageKeys.userBehavior, JSON.stringify(behavior));
-
       syncDataAfterTraining();
     } catch (error) {
       console.error('Error tracking search:', error);
@@ -283,7 +245,6 @@ class LocNetAI {
       if (!behavior.purchases) behavior.purchases = [];
       behavior.purchases.push({ items: cart, timestamp: Date.now() });
       localStorage.setItem(this.storageKeys.userBehavior, JSON.stringify(behavior));
-
       await this.updateRecommendations();
       await syncDataAfterTraining();
     } catch (error) {
@@ -302,7 +263,6 @@ class LocNetAI {
       const recommendations = products
         .sort((a, b) => scores[b.id] - scores[a.id])
         .slice(0, 5);
-
       localStorage.setItem(this.storageKeys.recommendations, JSON.stringify(recommendations));
       this.updateRecommendationDisplay(recommendations);
     } catch (error) {
@@ -340,7 +300,6 @@ class LocNetAI {
     if (!aiRecommendGrid) return;
     aiRecommendGrid.innerHTML = '';
     const fragment = document.createDocumentFragment();
-
     recommendations.forEach((product) => {
       const card = document.createElement('div');
       card.className = 'product-card';
@@ -366,14 +325,12 @@ class LocNetAI {
     try {
       let behavior = JSON.parse(localStorage.getItem(this.storageKeys.userBehavior) || '{}');
       const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-
       if (behavior.searches) {
         behavior.searches = behavior.searches.filter((search) => search.timestamp > thirtyDaysAgo);
       }
       if (behavior.purchases) {
         behavior.purchases = behavior.purchases.filter((purchase) => purchase.timestamp > thirtyDaysAgo);
       }
-
       localStorage.setItem(this.storageKeys.userBehavior, JSON.stringify(behavior));
     } catch (error) {
       console.error('Error cleaning up:', error);
@@ -384,6 +341,7 @@ class LocNetAI {
 /****************************************************
  * ML-AI Functions
  ****************************************************/
+
 function escapeHTML(str) {
   return String(str).replace(/[&<>"']/g, function(match) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
@@ -431,7 +389,6 @@ class MLSystem {
       const xs = tf.tensor2d(data);
       const ys = tf.tensor2d(labels, [labels.length, 1]);
       console.log('Train data shape:', xs.shape, 'Label shape:', ys.shape);
-
       await this.model.fit(xs, ys, {
         epochs: 10,
         batchSize: 32,
@@ -443,7 +400,6 @@ class MLSystem {
           }
         }
       });
-
       xs.dispose();
       ys.dispose();
       console.log('Training completed.');
@@ -466,14 +422,11 @@ class MLSystem {
         input.category || 0
       ];
       console.log('Predicting with input array:', inputArr);
-
       const inputTensor = tf.tensor2d([inputArr], [1, 5]);
       const prediction = this.model.predict(inputTensor);
       const result = await prediction.data();
-
       inputTensor.dispose();
       prediction.dispose();
-
       console.log('Prediction result:', result[0]);
       return result[0];
     } catch (error) {
@@ -487,12 +440,11 @@ class MLSystem {
       const behavior = JSON.parse(localStorage.getItem('ai_user_behavior') || '{}');
       const products = JSON.parse(localStorage.getItem('products') || '[]');
       if (!behavior.purchases || !products.length) return { data: [], labels: [] };
-
       const data = [];
       const labels = [];
       products.forEach(product => {
         data.push({
-          views: behavior.productViews?.[product.id] || 0,
+          views: behavior.productViews.[product.id] || 0,
           searches: 0,
           purchases: behavior.purchases?.filter(p => p.items.some(i => i.id === product.id)).length || 0,
           price: product.price,
@@ -612,7 +564,6 @@ class AdaptiveMLSystem extends MLSystem {
       const previousMode = this.currentMode;
       const currentPerformance = await this.evaluatePerformance();
       await this.evolveModel(newMode);
-
       const newPerformance = await this.evaluatePerformance();
       if (newPerformance < currentPerformance * 0.9) {
         console.log('Performance degraded, rolling back evolution');
@@ -652,7 +603,6 @@ class AdaptiveMLSystem extends MLSystem {
       loss: 'binaryCrossentropy',
       metrics: ['accuracy']
     });
-
     if (this.model) {
       const oldWeights = this.model.getWeights();
       const compatibleWeights = this.adjustWeights(oldWeights, newModel);
@@ -668,12 +618,10 @@ class AdaptiveMLSystem extends MLSystem {
       const newWeights = newModel.getWeights();
       const adjustedWeights = [];
       const n = Math.min(oldWeights.length, newWeights.length);
-
       for (let i = 0; i < n; i++) {
         const targetWeight = newWeights[i];
         const targetShape = targetWeight.shape;
         const oldWeight = oldWeights[i];
-
         if (oldWeight.shape.length === targetShape.length) {
           let canSlice = true;
           for (let d = 0; d < targetShape.length; d++) {
@@ -682,9 +630,7 @@ class AdaptiveMLSystem extends MLSystem {
               break;
             }
           }
-          let adjusted = canSlice
-            ? tf.tidy(() => oldWeight.slice(new Array(targetShape.length).fill(0), targetShape))
-            : targetWeight;
+          let adjusted = canSlice ? tf.tidy(() => oldWeight.slice(new Array(targetShape.length).fill(0), targetShape)) : targetWeight;
           adjustedWeights.push(adjusted);
         } else {
           adjustedWeights.push(targetWeight);
@@ -704,7 +650,6 @@ class AdaptiveMLSystem extends MLSystem {
     try {
       const testData = await this.getTestData();
       if (!testData || testData.data.length === 0) return 1;
-
       const predictions = await Promise.all(testData.data.map(input => this.predict(input)));
       const accuracy = predictions.reduce((acc, pred, idx) => {
         const actual = testData.labels[idx];
@@ -780,9 +725,7 @@ class ResourceMonitor {
     try {
       let total = 0;
       for (const key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
-          total += localStorage[key].length;
-        }
+        if (localStorage.hasOwnProperty(key)) total += localStorage[key].length;
       }
       return Math.min((total / (5 * 1024 * 1024)) * 100, 100);
     } catch (error) {
@@ -811,12 +754,9 @@ class MLEnhancedAI extends LocNetAI {
   }
 
   startMLTraining() {
-    // ตั้งให้เทรนทุก 24 ชม. ตัวอย่าง
     setInterval(async () => {
       const trainingData = this.prepareTrainingData();
-      if (trainingData.data.length > 0) {
-        await this.mlSystem.train(trainingData.data, trainingData.labels);
-      }
+      if (trainingData.data.length > 0) await this.mlSystem.train(trainingData.data, trainingData.labels);
     }, 24 * 60 * 60 * 1000);
   }
 
@@ -824,7 +764,6 @@ class MLEnhancedAI extends LocNetAI {
     const behavior = JSON.parse(localStorage.getItem(this.storageKeys.userBehavior) || '{}');
     const data = [];
     const labels = [];
-
     if (behavior.purchases) {
       behavior.purchases.forEach(purchase => {
         purchase.items.forEach(item => {
@@ -839,11 +778,8 @@ class MLEnhancedAI extends LocNetAI {
         });
       });
     }
-
-    // สร้างตัวอย่าง Negative (ยังไม่ซื้อ)
     const products = JSON.parse(localStorage.getItem('products') || '[]');
     products.forEach(product => {
-      // ถ้า productId ไม่เคยถูกซื้อ
       if (!behavior.purchases?.some(p => p.items.some(i => i.id === product.id))) {
         data.push({
           views: behavior.productViews?.[product.id] || 0,
@@ -855,7 +791,6 @@ class MLEnhancedAI extends LocNetAI {
         labels.push(0);
       }
     });
-
     return { data, labels };
   }
 
@@ -874,9 +809,8 @@ class MLEnhancedAI extends LocNetAI {
     return category === -1 ? categories.length - 1 : category;
   }
 
-  // Override
   async calculateProductScore(product, behavior) {
-    let baseScore = await super.calculateProductScore(product, behavior);
+    let baseScore = await LocNetAI.prototype.calculateProductScore.call(this, product, behavior);
     try {
       const mlScore = await this.mlSystem.predict({
         views: behavior.productViews?.[product.id] || 0,
@@ -885,10 +819,7 @@ class MLEnhancedAI extends LocNetAI {
         price: product.price,
         category: this.getCategoryIndex(product)
       });
-      if (mlScore !== null) {
-        // ผสมคะแนนเบื้องต้นกับคะแนนจากโมเดล
-        baseScore = baseScore * 0.7 + mlScore * 0.3;
-      }
+      if (mlScore !== null) baseScore = baseScore * 0.7 + mlScore * 0.3;
     } catch (error) {
       console.error('Error getting ML score:', error);
     }
@@ -917,17 +848,12 @@ async function handleRegister(e) {
   e.preventDefault();
   console.log("Starting handleRegister");
 
-  const username = document.getElementById("reg-username")?.value.trim();
-  const email = document.getElementById("reg-email")?.value.trim();
-  const phone = document.getElementById("reg-phone")?.value.trim();
-  const address = document.getElementById("reg-address")?.value.trim();
-  const pass = document.getElementById("reg-password")?.value;
-  const pass2 = document.getElementById("reg-password-confirm")?.value;
-
-  if (!pass || !pass2) {
-    alert("กรุณากรอกรหัสผ่าน");
-    return;
-  }
+  const username = document.getElementById("reg-username").value.trim();
+  const email = document.getElementById("reg-email").value.trim();
+  const phone = document.getElementById("reg-phone").value.trim();
+  const address = document.getElementById("reg-address").value.trim();
+  const pass = document.getElementById("reg-password").value;
+  const pass2 = document.getElementById("reg-password-confirm").value;
 
   if (pass !== pass2) {
     console.log("Passwords do not match");
@@ -976,8 +902,8 @@ async function handleLogin(e) {
   e.preventDefault();
   console.log("Starting handleLogin");
 
-  const email = document.getElementById("login-email")?.value.trim();
-  const password = document.getElementById("login-password")?.value;
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value;
 
   if (!email || !password) {
     alert("กรุณากรอกอีเมลและรหัสผ่าน");
@@ -1043,7 +969,7 @@ async function updateUIAfterLogin(supabaseUser) {
 }
 
 /****************************************************
- * Modal Auth แสดง/ปิด
+ * Modal Auth แสดง/ปิด (ใช้ลิงก์จริงสำหรับ GitHub Pages)
  ****************************************************/
 function openModal() {
   if (!localStorage.getItem("policyConsent")) {
@@ -1054,19 +980,15 @@ function openModal() {
 }
 
 function closeModal() {
-  const authModal = document.getElementById("authModal");
-  if (authModal) {
-    authModal.style.display = "none";
-  }
+  document.getElementById("authModal").style.display = "none";
 }
 
 function switchTab(e, tabName) {
   const tabs = document.querySelectorAll(".tab");
   tabs.forEach((t) => t.classList.remove("active"));
   e.target.classList.add("active");
-
-  document.getElementById("loginForm").style.display = (tabName === "login") ? "block" : "none";
-  document.getElementById("registerForm").style.display = (tabName === "register") ? "block" : "none";
+  document.getElementById("loginForm").style.display = tabName === "login" ? "block" : "none";
+  document.getElementById("registerForm").style.display = tabName === "register" ? "block" : "none";
 }
 
 function showPolicyPopup() {
@@ -1116,9 +1038,20 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.switchTab = switchTab;
 
+window.addEventListener("click", function(event) {
+  const authModal = document.getElementById("authModal");
+  if (event.target === authModal) closeModal();
+});
+
 /****************************************************
  * ป๊อปอัปยินยอมคุกกี้
  ****************************************************/
+document.addEventListener("DOMContentLoaded", () => {
+  if (!localStorage.getItem("cookieConsent")) {
+    showCookiePopup();
+  }
+});
+
 function showCookiePopup() {
   const popup = document.createElement("div");
   popup.id = "cookiePopup";
@@ -1172,8 +1105,7 @@ function acceptAllCookies() {
     statistics: true,
     marketing: true
   }));
-  const cookiePopup = document.getElementById("cookiePopup");
-  if (cookiePopup) cookiePopup.remove();
+  document.getElementById("cookiePopup").remove();
 }
 
 function showCookieSettings() {
@@ -1189,8 +1121,7 @@ function saveCookieSettings() {
     marketing: document.getElementById("marketingCookies").checked
   };
   localStorage.setItem("cookieConsent", JSON.stringify(settings));
-  const cookiePopup = document.getElementById("cookiePopup");
-  if (cookiePopup) cookiePopup.remove();
+  document.getElementById("cookiePopup").remove();
   applyCookieSettings(settings);
 }
 
@@ -1204,6 +1135,11 @@ function applyCookieSettings(settings) {
   if (!settings.marketing) {
     document.cookie = "affiliate_tracker=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   }
+}
+
+const savedConsent = localStorage.getItem("cookieConsent");
+if (savedConsent) {
+  applyCookieSettings(JSON.parse(savedConsent));
 }
 
 /****************************************************
@@ -1251,6 +1187,10 @@ function createForgotPasswordModal() {
     modal.querySelector("#generateOtpBtn").addEventListener("click", (e) => {
       e.preventDefault();
       generateOtpForUser();
+    });
+
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeForgotPasswordModal();
     });
   }
   return modal;
@@ -1346,7 +1286,6 @@ async function handleForgotPasswordSubmission(e) {
     return;
   }
 
-  // อัปเดต password ที่ระบบ Auth ของ Supabase
   const { error: updateAuthErr } = await window.supabase.auth.updateUser({
     password: newPassword,
   });
@@ -1355,7 +1294,6 @@ async function handleForgotPasswordSubmission(e) {
     return;
   }
 
-  // เคลียร์ค่า OTP ในตาราง users
   await window.supabase
     .from("users")
     .update({ reset_otp: null, reset_otp_expire: null })
@@ -1370,10 +1308,8 @@ async function handleForgotPasswordSubmission(e) {
  * Discord Notification
  ****************************************************/
 async function sendToDiscord(cart, total, orderDetails, slipFile) {
-  // เปลี่ยนเป็น URL Webhook ของคุณ
   const DISCORD_WEBHOOK_URL =
-    "https://discord.com/api/webhooks/xxxxxxx/xxxxxxx"; 
-
+    "https://discord.com/api/webhooks/1336992146145673257/_ednBAPdn4Bo9ml2MkcLJQoGzaNBxMKveJqMBksdWmWpE5MIFzaOGepODtCheOHqZYLv";
   const thaiDateTime = new Date().toLocaleString("th-TH", {
     timeZone: "Asia/Bangkok",
     year: "numeric",
@@ -1407,7 +1343,6 @@ async function sendToDiscord(cart, total, orderDetails, slipFile) {
 
   try {
     if (slipFile) {
-      // แนบไฟล์สลิป
       const formData = new FormData();
       formData.append("file", slipFile, slipFile.name);
       embed.image = { url: `attachment://${slipFile.name}` };
@@ -1417,13 +1352,9 @@ async function sendToDiscord(cart, total, orderDetails, slipFile) {
         embeds: [embed],
       };
       formData.append("payload_json", JSON.stringify(payload));
-      const response = await fetch(DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        body: formData
-      });
+      const response = await fetch(DISCORD_WEBHOOK_URL, { method: "POST", body: formData });
       if (!response.ok) throw new Error("ไม่สามารถส่งข้อมูลไปยัง Discord ได้");
     } else {
-      // ไม่ได้แนบไฟล์สลิป
       const response = await fetch(DISCORD_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1490,7 +1421,6 @@ async function addToCart(productId) {
 
 async function renderCartItems() {
   const cartItemsDiv = document.getElementById("cartItems");
-  if (!cartItemsDiv) return;
   cartItemsDiv.innerHTML = "";
   let total = 0;
 
@@ -1549,8 +1479,6 @@ async function renderCartItems() {
 
 async function updateCartCount() {
   const cartCount = document.querySelector(".cart-count");
-  if (!cartCount) return;
-
   let qty = 0;
   const user = await getCurrentUser();
   if (!user) {
@@ -1706,18 +1634,17 @@ async function confirmCheckout(e) {
     });
   }
 
-  // ลบข้อมูลตะกร้าออกก่อน
-  await window.supabase.from("cart").delete().eq("user_id", user.id);
-  updateCartCount();
-  renderCartItems();
-  closeCheckoutModal();
-  toggleCart();
-
   pendingCart = cartDetail;
   pendingOrder = {
     paymentMethod: payment,
     address: { fullName, phone, address: addressText, note },
   };
+
+  await window.supabase.from("cart").delete().eq("user_id", user.id);
+  updateCartCount();
+  renderCartItems();
+  closeCheckoutModal();
+  toggleCart();
 
   if (payment === "โอนผ่านธนาคาร") {
     openPaymentModal();
@@ -1730,9 +1657,6 @@ async function confirmCheckout(e) {
 }
 window.confirmCheckout = confirmCheckout;
 
-/****************************************************
- * Payment Modal
- ****************************************************/
 function createPaymentModal() {
   let modal = document.getElementById("paymentModal");
   if (!modal) {
@@ -1759,6 +1683,10 @@ function createPaymentModal() {
 
     modal.querySelector(".close-payment").addEventListener("click", closePaymentModal);
     modal.querySelector("#confirmPaymentBtn").addEventListener("click", handleConfirmPayment);
+
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closePaymentModal();
+    });
   }
   return modal;
 }
@@ -1776,9 +1704,7 @@ function closePaymentModal() {
 async function handleConfirmPayment() {
   const slipInput = document.getElementById("bankSlip");
   let slipFile = null;
-  if (slipInput.files && slipInput.files[0]) {
-    slipFile = slipInput.files[0];
-  }
+  if (slipInput.files && slipInput.files[0]) slipFile = slipInput.files[0];
 
   if (!pendingCart || !pendingOrder) {
     alert("ไม่พบข้อมูลออเดอร์ กรุณาสั่งซื้อใหม่");
@@ -1787,9 +1713,7 @@ async function handleConfirmPayment() {
   }
 
   let total = 0;
-  pendingCart.forEach((item) => {
-    total += item.price * item.quantity;
-  });
+  pendingCart.forEach((item) => total += item.price * item.quantity);
 
   await sendToDiscord(pendingCart, total, pendingOrder, slipFile);
   alert("การชำระเงินสำเร็จ! ทางเราจะตรวจสอบภายใน 24 ชั่วโมง");
@@ -1802,32 +1726,22 @@ async function handleConfirmPayment() {
  * Product Functions
  ****************************************************/
 async function loadProducts() {
-  if (!window.supabase) {
-    console.error('Supabase not initialized in loadProducts');
+  const { data: products, error } = await window.supabase.from("products").select("*");
+  if (error) {
+    console.error("loadProducts error:", error);
     return [];
   }
-  try {
-    const { data: products, error } = await window.supabase.from("products").select("*");
-    if (error) throw error;
-    // เก็บลง localStorage ไว้ใช้กับ AI
-    localStorage.setItem('products', JSON.stringify(products || []));
-    return products || [];
-  } catch (err) {
-    console.error('Error loading products:', err);
-    return [];
-  }
+  return products;
 }
 
 async function renderProductsList(products) {
   const productsGrid = document.getElementById("productsGrid");
-  if (!productsGrid) return;
   productsGrid.innerHTML = "";
   const fragment = document.createDocumentFragment();
 
   products.forEach((p) => {
     const card = document.createElement("div");
     card.classList.add("product-card");
-    card.dataset.productId = p.id; // ไว้สำหรับ trackProductView
     card.innerHTML = `
       <img src="${validateImageURL(p.image_url || "")}" alt="${escapeHTML(p.name)}" class="product-image" data-product-id="${p.id}" loading="lazy">
       <div class="product-info">
@@ -1861,7 +1775,6 @@ async function renderProducts() {
 async function getAIRecommendations() {
   const products = await loadProducts();
   if (!products.length) return [];
-  // ตัวอย่าง: สุ่ม 2 ชิ้น
   const shuffled = [...products].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 2);
 }
@@ -1876,7 +1789,6 @@ async function renderAIRecommendations() {
   recs.forEach((p) => {
     const card = document.createElement("div");
     card.classList.add("product-card");
-    card.dataset.productId = p.id; // ไว้สำหรับ trackProductView
     card.innerHTML = `
       <img src="${validateImageURL(p.image_url || "")}" alt="${escapeHTML(p.name)}" class="product-image" data-product-id="${p.id}" loading="lazy">
       <div class="product-info">
@@ -1920,7 +1832,7 @@ function closeProductDetail() {
 }
 window.closeProductDetail = closeProductDetail;
 
-document.getElementById("addToCartFromDetail")?.addEventListener("click", function (e) {
+document.getElementById("addToCartFromDetail").addEventListener("click", function (e) {
   const productId = e.target.getAttribute("data-product-id");
   addToCart(productId);
   closeProductDetail();
@@ -1991,88 +1903,107 @@ function closeAdminPanel() {
 }
 
 async function renderAdminProductList() {
-  const adminList = document.getElementById("adminProductList");
-  if (!adminList) return;
-  adminList.innerHTML = "";
-  const products = await loadProducts();
-
-  const table = document.createElement("table");
-  table.style.width = "100%";
-  table.style.borderCollapse = "collapse";
-  table.innerHTML = `
-    <thead>
-      <tr style="background:#f0f0f0">
-        <th style="padding:8px;">ID</th>
-        <th style="padding:8px;">สินค้า</th>
-        <th style="padding:8px;">ราคา</th>
-        <th style="padding:8px;">แก้ไข</th>
-        <th style="padding:8px;">ลบ</th>
-      </tr>
-    </thead>
-    <tbody id="adminTableBody"></tbody>
-  `;
-
-  adminList.appendChild(table);
-  const tbody = document.getElementById("adminTableBody");
-
-  products.forEach((p) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="padding:8px;">${p.id}</td>
-      <td style="padding:8px;">
-        <strong>${escapeHTML(p.name)}</strong><br/>
-        <small>${escapeHTML(p.description || "")}</small>
-      </td>
-      <td style="padding:8px;">฿${p.price}</td>
-      <td style="padding:8px;">
-        <button class="btn-secondary" onclick="editProduct('${p.id}')">แก้ไข</button>
-      </td>
-      <td style="padding:8px;">
-        <button class="btn-danger" onclick="deleteProduct('${p.id}')">ลบ</button>
-      </td>
+    const adminList = document.getElementById("adminProductList");
+    adminList.innerHTML = "";
+    const products = await loadProducts();
+  
+    const table = document.createElement("table");
+    table.style.width = "100%";
+    table.style.borderCollapse = "collapse";
+    table.innerHTML = `
+      <thead>
+        <tr style="background:#f0f0f0">
+          <th style="padding:8px;">ID</th>
+          <th style="padding:8px;">สินค้า</th>
+          <th style="padding:8px;">ราคา</th>
+          <th style="padding:8px;">แก้ไข</th>
+          <th style="padding:8px;">ลบ</th>
+        </tr>
+      </thead>
+      <tbody id="adminTableBody"></tbody>
     `;
-    tbody.appendChild(tr);
-  });
-}
-
-async function editProduct(productId) {
-  const products = await loadProducts();
-  const prod = products.find((x) => x.id === productId);
-  if (!prod) return;
-  editingProductId = prod.id;
-  document.getElementById("editProductId").value = prod.id;
-  document.getElementById("productName").value = prod.name;
-  document.getElementById("productDesc").value = prod.description || "";
-  document.getElementById("productPrice").value = prod.price;
-  document.getElementById("adminTitle").textContent = "แก้ไขสินค้า";
-  document.getElementById("productFormBtn").textContent = "บันทึกการแก้ไข";
-}
-
-async function handleProductSubmit(e) {
-  e.preventDefault();
-
-  const name = document.getElementById("productName").value.trim();
-  const description = document.getElementById("productDesc").value.trim();
-  const price = document.getElementById("productPrice").value.trim();
-  const imageFile = document.getElementById("productImage").files[0];
-
-  if (!name || !price) {
-    alert("กรุณากรอกข้อมูลสินค้าให้ครบ");
-    return;
+  
+    adminList.appendChild(table);
+    const tbody = document.getElementById("adminTableBody");
+  
+    products.forEach((p) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="padding:8px;">${p.id}</td>
+        <td style="padding:8px;">
+          <strong>${escapeHTML(p.name)}</strong><br/>
+          <small>${escapeHTML(p.description || "")}</small>
+        </td>
+        <td style="padding:8px;">฿${p.price}</td>
+        <td style="padding:8px;">
+          <button class="btn-secondary" onclick="editProduct('${p.id}')">แก้ไข</button>
+        </td>
+        <td style="padding:8px;">
+          <button class="btn-danger" onclick="deleteProduct('${p.id}')">ลบ</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
-
-  if (editingProductId) {
-    // แก้ไขสินค้า
-    let base64Image;
-    if (imageFile) {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        base64Image = event.target.result;
+  
+  async function editProduct(productId) {
+    const products = await loadProducts();
+    const prod = products.find((x) => x.id === productId);
+    if (!prod) return;
+    editingProductId = prod.id;
+    document.getElementById("editProductId").value = prod.id;
+    document.getElementById("productName").value = prod.name;
+    document.getElementById("productDesc").value = prod.description || "";
+    document.getElementById("productPrice").value = prod.price;
+    document.getElementById("adminTitle").textContent = "แก้ไขสินค้า";
+    document.getElementById("productFormBtn").textContent = "บันทึกการแก้ไข";
+  }
+  
+  async function handleProductSubmit(e) {
+    e.preventDefault();
+  
+    const name = document.getElementById("productName").value.trim();
+    const description = document.getElementById("productDesc").value.trim();
+    const price = document.getElementById("productPrice").value.trim();
+    const imageFile = document.getElementById("productImage").files[0];
+  
+    if (!name || !price) {
+      alert("กรุณากรอกข้อมูลสินค้าให้ครบ");
+      return;
+    }
+  
+    if (editingProductId) {
+      // แก้ไขสินค้า
+      let base64Image;
+      if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          base64Image = event.target.result;
+          const { error } = await window.supabase
+            .from("products")
+            .update({ name, description, price: Number(price), image_url: base64Image })
+            .eq("id", editingProductId);
+  
+          if (error) {
+            alert("แก้ไขสินค้าไม่สำเร็จ: " + error.message);
+            return;
+          }
+          alert("แก้ไขสินค้าเรียบร้อย");
+          renderProducts();
+          renderAdminProductList();
+          e.target.reset();
+          editingProductId = null;
+          document.getElementById("editProductId").value = "";
+          document.getElementById("adminTitle").textContent = "เพิ่ม/แก้ไข สินค้า";
+          document.getElementById("productFormBtn").textContent = "บันทึกสินค้า";
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
         const { error } = await window.supabase
           .from("products")
-          .update({ name, description, price: Number(price), image_url: base64Image })
+          .update({ name, description, price: Number(price) })
           .eq("id", editingProductId);
-
+  
         if (error) {
           alert("แก้ไขสินค้าไม่สำเร็จ: " + error.message);
           return;
@@ -2085,448 +2016,411 @@ async function handleProductSubmit(e) {
         document.getElementById("editProductId").value = "";
         document.getElementById("adminTitle").textContent = "เพิ่ม/แก้ไข สินค้า";
         document.getElementById("productFormBtn").textContent = "บันทึกสินค้า";
+      }
+    } else {
+      // เพิ่มสินค้าใหม่
+      if (!imageFile) {
+        alert("กรุณาอัปโหลดรูปสินค้า");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Image = event.target.result;
+        const { error } = await window.supabase.from("products").insert({
+          name,
+          description,
+          price: Number(price),
+          image_url: base64Image,
+        });
+  
+        if (error) {
+          alert("เพิ่มสินค้าไม่สำเร็จ: " + error.message);
+          return;
+        }
+        alert("เพิ่มสินค้าเรียบร้อย");
+        renderProducts();
+        renderAdminProductList();
+        e.target.reset();
       };
       reader.readAsDataURL(imageFile);
-    } else {
-      const { error } = await window.supabase
-        .from("products")
-        .update({ name, description, price: Number(price) })
-        .eq("id", editingProductId);
-
-      if (error) {
-        alert("แก้ไขสินค้าไม่สำเร็จ: " + error.message);
-        return;
-      }
-      alert("แก้ไขสินค้าเรียบร้อย");
-      renderProducts();
-      renderAdminProductList();
-      e.target.reset();
-      editingProductId = null;
-      document.getElementById("editProductId").value = "";
-      document.getElementById("adminTitle").textContent = "เพิ่ม/แก้ไข สินค้า";
-      document.getElementById("productFormBtn").textContent = "บันทึกสินค้า";
     }
-  } else {
-    // เพิ่มสินค้าใหม่
-    if (!imageFile) {
-      alert("กรุณาอัปโหลดรูปสินค้า");
+  }
+  
+  async function deleteProduct(id) {
+    if (!confirm("คุณต้องการลบสินค้านี้หรือไม่?")) return;
+    const { error } = await window.supabase.from("products").delete().eq("id", id);
+    if (error) {
+      alert("ลบสินค้าไม่สำเร็จ: " + error.message);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64Image = event.target.result;
-      const { error } = await window.supabase.from("products").insert({
-        name,
-        description,
-        price: Number(price),
-        image_url: base64Image,
-      });
-
-      if (error) {
-        alert("เพิ่มสินค้าไม่สำเร็จ: " + error.message);
-        return;
+    alert("ลบสินค้าเรียบร้อย");
+    renderProducts();
+    renderAdminProductList();
+  }
+  
+  window.openAdminPanel = openAdminPanel;
+  window.closeAdminPanel = closeAdminPanel;
+  
+  /****************************************************
+   * Event Delegation: Products Grid, AI Grid, Cart Items
+   ****************************************************/
+  document.getElementById("productsGrid").addEventListener("click", function (e) {
+    const viewBtn = e.target.closest(".action-view-detail");
+    if (viewBtn) {
+      e.preventDefault();
+      const productId = viewBtn.getAttribute("data-product-id");
+      openProductDetail(productId);
+      return;
+    }
+    const addBtn = e.target.closest(".action-add-to-cart");
+    if (addBtn) {
+      e.preventDefault();
+      const productId = addBtn.getAttribute("data-product-id");
+      addToCart(productId);
+      return;
+    }
+    const likeBtn = e.target.closest(".action-like");
+    if (likeBtn) {
+      e.preventDefault();
+      const productId = likeBtn.getAttribute("data-product-id");
+      toggleLike(productId, likeBtn);
+      return;
+    }
+  });
+  
+  document.getElementById("aiRecommendGrid").addEventListener("click", function (e) {
+    const viewBtn = e.target.closest(".action-view-detail");
+    if (viewBtn) {
+      e.preventDefault();
+      const productId = viewBtn.getAttribute("data-product-id");
+      openProductDetail(productId);
+      return;
+    }
+    const addBtn = e.target.closest(".action-add-to-cart");
+    if (addBtn) {
+      e.preventDefault();
+      const productId = addBtn.getAttribute("data-product-id");
+      addToCart(productId);
+      return;
+    }
+    const likeBtn = e.target.closest(".action-like");
+    if (likeBtn) {
+      e.preventDefault();
+      const productId = likeBtn.getAttribute("data-product-id");
+      toggleLike(productId, likeBtn);
+      return;
+    }
+  });
+  
+  document.getElementById("cartItems").addEventListener("click", function (e) {
+    if (e.target.closest(".btn-decrease")) {
+      e.preventDefault();
+      const productId = e.target.closest(".btn-decrease").getAttribute("data-pid");
+      decreaseQuantity(productId);
+    }
+    if (e.target.closest(".btn-increase")) {
+      e.preventDefault();
+      const productId = e.target.closest(".btn-increase").getAttribute("data-pid");
+      increaseQuantity(productId);
+    }
+    if (e.target.closest(".btn-remove")) {
+      e.preventDefault();
+      const productId = e.target.closest(".btn-remove").getAttribute("data-pid");
+      removeItem(productId);
+    }
+  });
+  
+  /****************************************************
+   * Search & Filter
+   ****************************************************/
+  async function handleSearch() {
+    const searchInput = document.querySelector('.filter-group input[type="text"]');
+    const query = searchInput.value.trim().toLowerCase();
+    const products = await loadProducts();
+    if (!query) {
+      renderProductsList(products);
+      return;
+    }
+    const filtered = products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(query) ||
+        (p.description || "").toLowerCase().includes(query) ||
+        p.id.toString().includes(query)
+    );
+    renderProductsList(filtered);
+  }
+  
+  async function handleFilter() {
+    const priceSlider = document.querySelector('.price-range input[type="range"]');
+    const maxPrice = parseFloat(priceSlider.value);
+  
+    let allProducts = await loadProducts();
+    let filtered = allProducts.filter((p) => parseFloat(p.price) <= maxPrice);
+  
+    const categoryCheckboxes = document.querySelectorAll(".filter-category:nth-of-type(2) input[type='checkbox']");
+    const selectedCategories = [];
+    categoryCheckboxes.forEach((chk) => {
+      if (chk.checked) {
+        const label = chk.parentElement.textContent.trim();
+        selectedCategories.push(label.toLowerCase());
       }
-      alert("เพิ่มสินค้าเรียบร้อย");
-      renderProducts();
-      renderAdminProductList();
-      e.target.reset();
-    };
-    reader.readAsDataURL(imageFile);
-  }
-}
-
-async function deleteProduct(id) {
-  if (!confirm("คุณต้องการลบสินค้านี้หรือไม่?")) return;
-  const { error } = await window.supabase.from("products").delete().eq("id", id);
-  if (error) {
-    alert("ลบสินค้าไม่สำเร็จ: " + error.message);
-    return;
-  }
-  alert("ลบสินค้าเรียบร้อย");
-  renderProducts();
-  renderAdminProductList();
-}
-
-window.openAdminPanel = openAdminPanel;
-window.closeAdminPanel = closeAdminPanel;
-
-/****************************************************
- * Event Delegation: Products Grid, AI Grid, Cart Items
- ****************************************************/
-document.getElementById("productsGrid")?.addEventListener("click", function (e) {
-  const viewBtn = e.target.closest(".action-view-detail");
-  if (viewBtn) {
-    e.preventDefault();
-    const productId = viewBtn.getAttribute("data-product-id");
-    openProductDetail(productId);
-    return;
-  }
-  const addBtn = e.target.closest(".action-add-to-cart");
-  if (addBtn) {
-    e.preventDefault();
-    const productId = addBtn.getAttribute("data-product-id");
-    addToCart(productId);
-    return;
-  }
-  const likeBtn = e.target.closest(".action-like");
-  if (likeBtn) {
-    e.preventDefault();
-    const productId = likeBtn.getAttribute("data-product-id");
-    toggleLike(productId, likeBtn);
-    return;
-  }
-});
-
-document.getElementById("aiRecommendGrid")?.addEventListener("click", function (e) {
-  const viewBtn = e.target.closest(".action-view-detail");
-  if (viewBtn) {
-    e.preventDefault();
-    const productId = viewBtn.getAttribute("data-product-id");
-    openProductDetail(productId);
-    return;
-  }
-  const addBtn = e.target.closest(".action-add-to-cart");
-  if (addBtn) {
-    e.preventDefault();
-    const productId = addBtn.getAttribute("data-product-id");
-    addToCart(productId);
-    return;
-  }
-  const likeBtn = e.target.closest(".action-like");
-  if (likeBtn) {
-    e.preventDefault();
-    const productId = likeBtn.getAttribute("data-product-id");
-    toggleLike(productId, likeBtn);
-    return;
-  }
-});
-
-document.getElementById("cartItems")?.addEventListener("click", function (e) {
-  if (e.target.closest(".btn-decrease")) {
-    e.preventDefault();
-    const productId = e.target.closest(".btn-decrease").getAttribute("data-pid");
-    decreaseQuantity(productId);
-  }
-  if (e.target.closest(".btn-increase")) {
-    e.preventDefault();
-    const productId = e.target.closest(".btn-increase").getAttribute("data-pid");
-    increaseQuantity(productId);
-  }
-  if (e.target.closest(".btn-remove")) {
-    e.preventDefault();
-    const productId = e.target.closest(".btn-remove").getAttribute("data-pid");
-    removeItem(productId);
-  }
-});
-
-/****************************************************
- * Search & Filter
- ****************************************************/
-async function handleSearch() {
-  const searchInput = document.querySelector('.filter-group input[type="text"]');
-  const query = searchInput.value.trim().toLowerCase();
-  const products = await loadProducts();
-  if (!query) {
-    renderProductsList(products);
-    return;
-  }
-  const filtered = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(query) ||
-      (p.description || "").toLowerCase().includes(query) ||
-      p.id.toString().includes(query)
-  );
-  renderProductsList(filtered);
-}
-
-async function handleFilter() {
-  const priceSlider = document.querySelector('.price-range input[type="range"]');
-  const maxPrice = parseFloat(priceSlider.value);
-  let allProducts = await loadProducts();
-  let filtered = allProducts.filter((p) => parseFloat(p.price) <= maxPrice);
-
-  // ตัวอย่างโค้ด Category/Brand filter (ปรับใช้ตามจริง)
-  const categoryCheckboxes = document.querySelectorAll(".filter-category:nth-of-type(2) input[type='checkbox']");
-  const selectedCategories = [];
-  categoryCheckboxes.forEach((chk) => {
-    if (chk.checked) {
-      const label = chk.parentElement.textContent.trim();
-      selectedCategories.push(label.toLowerCase());
+    });
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((p) =>
+        selectedCategories.some((cat) => (p.category || "").toLowerCase().includes(cat))
+      );
     }
-  });
-  if (selectedCategories.length > 0) {
-    filtered = filtered.filter((p) =>
-      selectedCategories.some((cat) => (p.category || "").toLowerCase().includes(cat))
-    );
-  }
-
-  const brandCheckboxes = document.querySelectorAll(".filter-category:nth-of-type(3) input[type='checkbox']");
-  const selectedBrands = [];
-  brandCheckboxes.forEach((chk) => {
-    if (chk.checked) {
-      const label = chk.parentElement.textContent.trim();
-      selectedBrands.push(label.toLowerCase());
+  
+    const brandCheckboxes = document.querySelectorAll(".filter-category:nth-of-type(3) input[type='checkbox']");
+    const selectedBrands = [];
+    brandCheckboxes.forEach((chk) => {
+      if (chk.checked) {
+        const label = chk.parentElement.textContent.trim();
+        selectedBrands.push(label.toLowerCase());
+      }
+    });
+    if (selectedBrands.length > 0) {
+      filtered = filtered.filter((p) =>
+        selectedBrands.some((b) => (p.description || "").toLowerCase().includes(b))
+      );
     }
-  });
-  if (selectedBrands.length > 0) {
-    filtered = filtered.filter((p) =>
-      selectedBrands.some((b) => (p.description || "").toLowerCase().includes(b))
-    );
+  
+    renderProductsList(filtered);
   }
-
-  renderProductsList(filtered);
-}
-
-function updatePriceDisplay() {
+  
+  const searchInputField = document.querySelector('.filter-group input[type="text"]');
+  if (searchInputField) {
+    searchInputField.addEventListener("input", handleSearch);
+  }
+  
+  function updatePriceDisplay() {
+    const priceSlider = document.querySelector('.price-range input[type="range"]');
+    const priceDisplay = document.getElementById("currentPrice");
+    if (priceSlider && priceDisplay) {
+      priceDisplay.textContent = "฿" + priceSlider.value;
+    }
+  }
+  
   const priceSlider = document.querySelector('.price-range input[type="range"]');
-  const priceDisplay = document.getElementById("currentPrice");
-  if (priceSlider && priceDisplay) {
-    priceDisplay.textContent = "฿" + priceSlider.value;
-  }
-}
-
-const searchInputField = document.querySelector('.filter-group input[type="text"]');
-if (searchInputField) {
-  searchInputField.addEventListener("input", handleSearch);
-}
-
-const priceSlider = document.querySelector('.price-range input[type="range"]');
-if (priceSlider) {
-  priceSlider.value = priceSlider.getAttribute("max") || 50000;
-  priceSlider.addEventListener("input", function () {
+  if (priceSlider) {
+    priceSlider.value = priceSlider.getAttribute("max") || 50000;
+    priceSlider.addEventListener("input", function () {
+      updatePriceDisplay();
+      handleFilter();
+    });
     updatePriceDisplay();
-    handleFilter();
+  }
+  
+  const filterCheckboxes = document.querySelectorAll(".filter-category input[type='checkbox']");
+  filterCheckboxes.forEach((chk) => {
+    chk.addEventListener("change", handleFilter);
   });
-  updatePriceDisplay();
-}
-
-const filterCheckboxes = document.querySelectorAll(".filter-category input[type='checkbox']");
-filterCheckboxes.forEach((chk) => {
-  chk.addEventListener("change", handleFilter);
-});
-
-/****************************************************
- * Profile Management Functions
- ****************************************************/
-async function openUserProfile() {
-  const user = await getCurrentUser();
-  if (!user) {
-    alert("กรุณาเข้าสู่ระบบก่อนเข้าถึงข้อมูลส่วนตัว");
-    openModal();
-    return;
+  
+  /****************************************************
+   * Profile Management Functions
+   ****************************************************/
+  async function openUserProfile() {
+    const user = await getCurrentUser();
+    if (!user) {
+      alert("กรุณาเข้าสู่ระบบก่อนเข้าถึงข้อมูลส่วนตัว");
+      openModal();
+      return;
+    }
+  
+    const { data: profile } = await window.supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+  
+    if (profile) {
+      document.getElementById("profile-username").value = profile.username || "";
+      document.getElementById("profile-email").value = profile.email || "";
+      document.getElementById("profile-email").setAttribute("readonly", true);
+      document.getElementById("profile-phone").value = profile.phone || "";
+      document.getElementById("profile-address").value = profile.address || "";
+    }
+  
+    document.getElementById("userProfileModal").style.display = "flex";
   }
-
-  const { data: profile } = await window.supabase
-    .from("users")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  if (profile) {
-    document.getElementById("profile-username").value = profile.username || "";
-    document.getElementById("profile-email").value = profile.email || "";
-    document.getElementById("profile-email").setAttribute("readonly", true);
-    document.getElementById("profile-phone").value = profile.phone || "";
-    document.getElementById("profile-address").value = profile.address || "";
+  
+  function closeUserProfile() {
+    document.getElementById("userProfileModal").style.display = "none";
+    document.getElementById("deleteConfirm").style.display = "none";
+    document.getElementById("deleteAccountBtn").style.display = "block";
   }
-
-  document.getElementById("userProfileModal").style.display = "flex";
-}
-
-function closeUserProfile() {
-  document.getElementById("userProfileModal").style.display = "none";
-  document.getElementById("deleteConfirm").style.display = "none";
-  document.getElementById("deleteAccountBtn").style.display = "block";
-}
-
-async function handleProfileUpdate(e) {
-  e.preventDefault();
-  const user = await getCurrentUser();
-  if (!user) return;
-
-  const username = document.getElementById("profile-username").value.trim();
-  const phone = document.getElementById("profile-phone").value.trim();
-  const address = document.getElementById("profile-address").value.trim();
-
-  const { error } = await window.supabase
-    .from("users")
-    .update({ username, phone, address })
-    .eq("id", user.id);
-
-  if (error) {
-    showNotification("ไม่สามารถบันทึกข้อมูลได้: " + error.message, "danger");
-    return;
+  
+  async function handleProfileUpdate(e) {
+    e.preventDefault();
+    const user = await getCurrentUser();
+    if (!user) return;
+  
+    const username = document.getElementById("profile-username").value.trim();
+    const phone = document.getElementById("profile-phone").value.trim();
+    const address = document.getElementById("profile-address").value.trim();
+  
+    const { error } = await window.supabase
+      .from("users")
+      .update({ username, phone, address })
+      .eq("id", user.id);
+  
+    if (error) {
+      showNotification("ไม่สามารถบันทึกข้อมูลได้: " + error.message, "danger");
+      return;
+    }
+    showNotification("บันทึกข้อมูลสำเร็จ", "success");
+    updateUIAfterLogin(user);
   }
-  showNotification("บันทึกข้อมูลสำเร็จ", "success");
-  updateUIAfterLogin(user);
-}
-
-function showDeleteConfirm() {
-  document.getElementById("deleteConfirm").style.display = "block";
-  document.getElementById("deleteAccountBtn").style.display = "none";
-}
-
-function cancelDeleteAccount() {
-  document.getElementById("deleteConfirm").style.display = "none";
-  document.getElementById("deleteAccountBtn").style.display = "block";
-}
-
-async function confirmDeleteAccount() {
-  const user = await getCurrentUser();
-  if (!user) return;
-
-  await window.supabase.from("users").delete().eq("id", user.id);
-  await window.supabase.from("wishlist").delete().eq("user_id", user.id);
-  await window.supabase.from("cart").delete().eq("user_id", user.id);
-
-  const { error } = await window.supabase.auth.admin.deleteUser(user.id);
-  if (error) {
-    showNotification("ลบบัญชีไม่สำเร็จ: " + error.message, "danger");
-    return;
+  
+  function showDeleteConfirm() {
+    document.getElementById("deleteConfirm").style.display = "block";
+    document.getElementById("deleteAccountBtn").style.display = "none";
   }
-
-  showNotification("ลบบัญชีสำเร็จ กำลังออกจากระบบ...", "success");
-  setTimeout(async () => {
-    closeUserProfile();
-    await window.supabase.auth.signOut();
-    location.reload();
-  }, 2000);
-}
-
-function showNotification(message, type = "success") {
-  const notification = document.getElementById("profileNotification");
-  notification.textContent = message;
-  notification.className = `alert alert-${type}`;
-  notification.style.display = "block";
-  setTimeout(() => {
-    notification.style.display = "none";
-  }, 3000);
-}
-
-window.openUserProfile = openUserProfile;
-window.closeUserProfile = closeUserProfile;
-window.handleProfileUpdate = handleProfileUpdate;
-window.showDeleteConfirm = showDeleteConfirm;
-window.cancelDeleteAccount = cancelDeleteAccount;
-window.confirmDeleteAccount = confirmDeleteAccount;
-window.showNotification = showNotification;
-
-/****************************************************
- * Service Worker Registration (ตัวอย่าง)
- ****************************************************/
-if ("serviceWorker" in navigator) {
-  const swCode = `
-    const CACHE_NAME = 'locnet-cache-v1';
-    const urlsToCache = [ '/' ];
-    self.addEventListener('install', (event) => {
-      event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
-      );
-    });
-    self.addEventListener('fetch', (event) => {
-      event.respondWith(
-        caches.match(event.request).then((response) => {
-          return response || fetch(event.request);
-        })
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: "application/javascript" });
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker
-    .register(swUrl)
-    .then((registration) => console.log("Service Worker registered with scope:", registration.scope))
-    .catch((error) => console.log("Service Worker registration failed:", error));
-}
-
-/****************************************************
- * Blog Read More (ตัวอย่าง)
- ****************************************************/
-function toggleReadMore(event) {
-  event.preventDefault();
-  const readMoreLink = event.target;
-  const article = readMoreLink.closest(".blog-card");
-  const moreContent = article.querySelector(".more-content");
-  if (!moreContent) return;
-
-  if (moreContent.style.display === "none" || !moreContent.style.display) {
-    moreContent.style.display = "block";
-    readMoreLink.textContent = "ซ่อน";
-  } else {
-    moreContent.style.display = "none";
-    readMoreLink.textContent = "อ่านต่อ";
+  
+  function cancelDeleteAccount() {
+    document.getElementById("deleteConfirm").style.display = "none";
+    document.getElementById("deleteAccountBtn").style.display = "block";
   }
-}
-
-/****************************************************
- * รวม Event เดียวหลัง DOM Loaded
- ****************************************************/
-document.addEventListener("DOMContentLoaded", async () => {
-  // เรียกใช้งานแอปหลัก
-  await initializeApp();
-
-  // แสดง Cookie Consent ถ้ายังไม่เคยยอมรับ
-  if (!localStorage.getItem("cookieConsent")) {
-    showCookiePopup();
+  
+  async function confirmDeleteAccount() {
+    const user = await getCurrentUser();
+    if (!user) return;
+  
+    await window.supabase.from("users").delete().eq("id", user.id);
+    await window.supabase.from("wishlist").delete().eq("user_id", user.id);
+    await window.supabase.from("cart").delete().eq("user_id", user.id);
+  
+    const { error } = await window.supabase.auth.admin.deleteUser(user.id);
+    if (error) {
+      showNotification("ลบบัญชีไม่สำเร็จ: " + error.message, "danger");
+      return;
+    }
+  
+    showNotification("ลบบัญชีสำเร็จ กำลังออกจากระบบ...", "success");
+    setTimeout(async () => {
+      closeUserProfile();
+      await window.supabase.auth.signOut();
+      location.reload();
+    }, 2000);
   }
-
-  // กรณีมีปุ่มซิงก์โมเดล (btn-sync) ก็สามารถกดเพื่อ Sync ได้
-  const btnSync = document.getElementById('btn-sync');
-  if (btnSync) {
-    btnSync.addEventListener('click', async () => {
-      await syncDataAfterTraining();
-      alert('ข้อมูลและโมเดลถูกส่งไปยัง Supabase แล้ว');
-    });
+  
+  function showNotification(message, type = "success") {
+    const notification = document.getElementById("profileNotification");
+    notification.textContent = message;
+    notification.className = `alert alert-${type}`;
+    notification.style.display = "block";
+    setTimeout(() => {
+      notification.style.display = "none";
+    }, 3000);
   }
-
-  // ผูกอีเวนต์ให้ฟอร์มลงทะเบียน
-  const registerForm = document.getElementById("registerForm");
-  if (registerForm) {
-    registerForm.addEventListener("submit", handleRegister);
-  }
-
-  // ผูกอีเวนต์ให้ฟอร์มแก้ไขโปรไฟล์
-  const profileForm = document.getElementById("profileForm");
-  if (profileForm) {
-    profileForm.addEventListener("submit", handleProfileUpdate);
-  }
-
-  const closeProfileBtn = document.querySelector(".close-profile");
-  if (closeProfileBtn) {
-    closeProfileBtn.addEventListener("click", closeUserProfile);
-  }
-
-  // ปุ่มเปิดโปรไฟล์
-  const profileBtn = document.querySelector('[data-action="open-profile"]');
-  if (profileBtn) {
-    profileBtn.addEventListener("click", openUserProfile);
-  }
-
-  // ปุ่มสลับโหมดมืด/สว่าง
-  const themeToggleBtn = document.getElementById("themeToggle");
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener("click", toggleTheme);
-  }
-
-  // ฟอร์ม Admin เพิ่ม/แก้ไข สินค้า
-  const productForm = document.getElementById("productForm");
-  if (productForm) {
-    productForm.addEventListener("submit", handleProductSubmit);
-  }
-
-  // กดนอก Modal เพื่อปิด (authModal, adminPanel, productDetailModal, checkoutModal)
-  window.onclick = function(e) {
+  
+  window.openUserProfile = openUserProfile;
+  window.closeUserProfile = closeUserProfile;
+  window.handleProfileUpdate = handleProfileUpdate;
+  window.showDeleteConfirm = showDeleteConfirm;
+  window.cancelDeleteAccount = cancelDeleteAccount;
+  window.confirmDeleteAccount = confirmDeleteAccount;
+  window.showNotification = showNotification;
+  
+  /****************************************************
+   * เมื่อโหลดหน้าเว็บ
+   ****************************************************/
+  window.onload = async function () {
+    const user = await getCurrentUser();
+    if (user) updateUIAfterLogin(user);
+    renderProducts();
+    renderAIRecommendations();
+    updateCartCount();
+  };
+  
+  window.onclick = function (e) {
     const authModal = document.getElementById("authModal");
     const adminPanel = document.getElementById("adminPanel");
     const productDetailModal = document.getElementById("productDetailModal");
     const checkoutModal = document.getElementById("checkoutModal");
-    const paymentModal = document.getElementById("paymentModal");
-    const forgotPasswordModal = document.getElementById("forgotPasswordModal");
-    
+  
     if (e.target === authModal) closeModal();
     if (e.target === adminPanel) closeAdminPanel();
     if (e.target === productDetailModal) closeProductDetail();
     if (e.target === checkoutModal) closeCheckoutModal();
-    if (e.target === paymentModal) closePaymentModal();
-    if (e.target === forgotPasswordModal) closeForgotPasswordModal();
- 
+  };
+  
+  /****************************************************
+   * Service Worker Registration
+   ****************************************************/
+  if ("serviceWorker" in navigator) {
+    const swCode = `
+      const CACHE_NAME = 'locnet-cache-v1';
+      const urlsToCache = [ '/' ];
+      self.addEventListener('install', (event) => {
+        event.waitUntil(
+          caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+        );
+      });
+      self.addEventListener('fetch', (event) => {
+        event.respondWith(
+          caches.match(event.request).then((response) => {
+            return response || fetch(event.request);
+          })
+        );
+      });
+    `;
+    const blob = new Blob([swCode], { type: "application/javascript" });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker
+      .register(swUrl)
+      .then((registration) => console.log("Service Worker registered with scope:", registration.scope))
+      .catch((error) => console.log("Service Worker registration failed:", error));
+  }
+  
+  /****************************************************
+   * Blog Read More
+   ****************************************************/
+  function toggleReadMore(event) {
+    event.preventDefault();
+    const readMoreLink = event.target;
+    const article = readMoreLink.closest(".blog-card");
+    const moreContent = article.querySelector(".more-content");
+    if (!moreContent) return;
+  
+    if (moreContent.style.display === "none" || !moreContent.style.display) {
+      moreContent.style.display = "block";
+      readMoreLink.textContent = "ซ่อน";
+    } else {
+      moreContent.style.display = "none";
+      readMoreLink.textContent = "อ่านต่อ";
+    }
+  }
+  
+  /****************************************************
+   * Event Listeners
+   ****************************************************/
+  document.addEventListener("DOMContentLoaded", () => {
+    const registerForm = document.getElementById("registerForm");
+    if (registerForm) {
+      registerForm.addEventListener("submit", handleRegister);
+    }
+  
+    const profileForm = document.getElementById("profileForm");
+    if (profileForm) {
+      profileForm.addEventListener("submit", handleProfileUpdate);
+    }
+  
+    const closeProfileBtn = document.querySelector(".close-profile");
+    if (closeProfileBtn) {
+      closeProfileBtn.addEventListener("click", closeUserProfile);
+    }
+  
+    const profileBtn = document.querySelector('[data-action="open-profile"]');
+    if (profileBtn) {
+      profileBtn.addEventListener("click", openUserProfile);
+    }
+  
+    const btnSync = document.getElementById('btn-sync');
+    if (btnSync) {
+      btnSync.addEventListener('click', async () => {
+        await syncDataAfterTraining();
+        alert('ข้อมูลและโมเดลถูกส่งไปยัง Supabase แล้ว');
+      });
+    }
+  });
