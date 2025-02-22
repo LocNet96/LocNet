@@ -27,9 +27,9 @@
   <link rel="stylesheet" href="styles.css">
 
   <!-- CDN Scripts ที่จำเป็น -->
-  
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
 <body>
   <!-- Header -->
@@ -415,19 +415,72 @@
   <!-- Sync Data Button -->
   <button id="btn-sync" style="position: fixed; bottom: 80px; right: 20px;">Sync Data</button>
 
-  <!-- Initial Products Data -->
+  <!-- Initial Scripts -->
   <script>
-    if (!localStorage.getItem('products')) {
-      const initialProducts = [
-        { id: 1, name: "ผ้าเบรก Premium", description: "ผ้าเบรกคุณภาพสูง", price: 1500, image_url: "https://placehold.co/300x200?text=Brake+Premium", affiliateLink: "https://affiliate.example.com/product/1" },
-        { id: 2, name: "ไส้กรองอากาศ High Flow", description: "เพิ่มประสิทธิภาพการกรอง", price: 850, image_url: "https://placehold.co/300x200?text=Air+Filter", affiliateLink: "https://affiliate.example.com/product/2" }
-      ];
-      localStorage.setItem('products', JSON.stringify(initialProducts));
+    // เริ่มต้น Supabase เมื่อหน้าโหลดเสร็จ
+    document.addEventListener('DOMContentLoaded', async () => {
+      const SUPABASE_URL = "https://auhxtlpiyfscdymddabc.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";
+
+      try {
+        if (typeof Supabase === 'undefined') {
+          throw new Error('Supabase CDN not loaded yet');
+        }
+        window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase initialized successfully');
+
+        // เริ่มต้นข้อมูลสินค้า
+        await initializeProducts();
+        renderProducts();
+        updateCartCount();
+
+        // เริ่มต้น AI
+        const ai = new MLEnhancedAI();
+
+        // ตรวจสอบผู้ใช้
+        const user = await getCurrentUser();
+        if (user) updateUIAfterLogin(user);
+      } catch (err) {
+        console.error('Initialization failed:', err.message);
+        alert('ไม่สามารถโหลดระบบได้ กรุณาลองใหม่');
+      }
+
+      // ตรวจสอบ CDN อื่นๆ
+      if (typeof tf === 'undefined') {
+        console.error('TensorFlow.js failed to load');
+        alert('ไม่สามารถโหลดระบบ AI ได้');
+      }
+      if (typeof emailjs === 'undefined') {
+        console.error('EmailJS failed to load');
+        alert('ไม่สามารถโหลดระบบอีเมลได้');
+      }
+    });
+
+    // ฟังก์ชันเริ่มต้นข้อมูลสินค้า
+    async function initializeProducts() {
+      let products = await loadProducts();
+      if (!products || products.length === 0) {
+        const initialProducts = [
+          { id: 1, name: "ผ้าเบรก Premium", description: "ผ้าเบรกคุณภาพสูง", price: 1500, image_url: "https://placehold.co/300x200?text=Brake+Premium" },
+          { id: 2, name: "ไส้กรองอากาศ High Flow", description: "เพิ่มประสิทธิภาพการกรอง", price: 850, image_url: "https://placehold.co/300x200?text=Air+Filter" }
+        ];
+        await window.supabase.from("products").insert(initialProducts);
+        products = await loadProducts();
+      }
+      localStorage.setItem('products', JSON.stringify(products));
+      return products;
+    }
+
+    // Service Worker Registration
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((registration) => console.log("Service Worker registered:", registration.scope))
+        .catch((error) => console.log("Service Worker registration failed:", error));
     }
   </script>
 
   <!-- Main Script -->
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
