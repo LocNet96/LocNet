@@ -2,7 +2,6 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <!-- Content Security Policy (CSP) ปรับให้รองรับ CDN และฟังก์ชันทั้งหมด -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.emailjs.com;
@@ -25,11 +24,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="https://via.placeholder.com/32" type="image/png">
 
-  <!-- CDN Scripts ที่จำเป็น -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+  <!-- CDN Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.21.0/dist/tf.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
 </head>
 <body>
   <!-- Header -->
@@ -417,27 +417,32 @@
 
   <!-- Initial Scripts -->
   <script>
-    // เริ่มต้น Supabase เมื่อหน้าโหลดเสร็จ
     document.addEventListener('DOMContentLoaded', async () => {
       const SUPABASE_URL = "https://auhxtlpiyfscdymddabc.supabase.co";
       const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";
 
+      const waitForSupabase = () => new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Supabase CDN timeout')), 10000);
+        const check = setInterval(() => {
+          if (typeof Supabase !== 'undefined') {
+            clearInterval(check);
+            clearTimeout(timeout);
+            resolve();
+          }
+        }, 100);
+      });
+
       try {
-        if (typeof Supabase === 'undefined') {
-          throw new Error('Supabase CDN not loaded yet');
-        }
+        await waitForSupabase();
         window.supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('Supabase initialized successfully');
 
-        // เริ่มต้นข้อมูลสินค้า
         await initializeProducts();
         renderProducts();
         updateCartCount();
 
-        // เริ่มต้น AI
         const ai = new MLEnhancedAI();
 
-        // ตรวจสอบผู้ใช้
         const user = await getCurrentUser();
         if (user) updateUIAfterLogin(user);
       } catch (err) {
@@ -445,7 +450,6 @@
         alert('ไม่สามารถโหลดระบบได้ กรุณาลองใหม่');
       }
 
-      // ตรวจสอบ CDN อื่นๆ
       if (typeof tf === 'undefined') {
         console.error('TensorFlow.js failed to load');
         alert('ไม่สามารถโหลดระบบ AI ได้');
@@ -456,7 +460,6 @@
       }
     });
 
-    // ฟังก์ชันเริ่มต้นข้อมูลสินค้า
     async function initializeProducts() {
       let products = await loadProducts();
       if (!products || products.length === 0) {
@@ -471,7 +474,6 @@
       return products;
     }
 
-    // Service Worker Registration
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
@@ -480,7 +482,6 @@
     }
   </script>
 
-  <!-- Main Script -->
   <script src="script.js"></script>
 </body>
 </html>
