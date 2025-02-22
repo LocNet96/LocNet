@@ -3,11 +3,29 @@
 /****************************************************
  * =========== เชื่อมต่อกับ Supabase ================
  ****************************************************/
+document.addEventListener('DOMContentLoaded', async () => {
+  // รอจนกว่า Supabase จะโหลด
+  const checkSupabase = () => new Promise((resolve) => {
+    const interval = setInterval(() => {
+      if (typeof Supabase !== 'undefined') {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 100); // ตรวจสอบทุก 100ms
+  });
 
+  try {
+    await checkSupabase();
 // *** แทนที่ด้วย Supabase URL และ Anon Key จริงจาก Supabase Dashboard ***
 const SUPABASE_URL = "https://auhxtlpiyfscdymddabc.supabase.co"; // เช่น 'https://xyz.supabase.co'
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1aHh0bHBpeWZzY2R5bWRkYWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0MjczNzIsImV4cCI6MjA1NTAwMzM3Mn0.wTHLfDSWgc_qnrc6xZwuWnGkRBAv-t7wgpcXy11tsAQ";// เช่น 'eyJhbGciOi...'
-
+window.supabase = supabase;
+    console.log('Supabase initialized successfully');
+  } catch (err) {
+    console.error('Supabase failed to load:', err);
+    alert('ไม่สามารถโหลด Supabase ได้ กรุณาลองใหม่หรือตรวจสอบการเชื่อมต่อ');
+  }
+});
 // รอให้ Supabase โหลดจาก CDN ก่อนกำหนด
 if (typeof supabase === 'undefined') {
   console.error('Supabase CDN not loaded yet');
@@ -16,15 +34,28 @@ if (typeof supabase === 'undefined') {
   window.supabase = supabase; // ทำให้ใช้งานได้ทั่วไป
 }
 
-async function getCurrentUser() {
-  if (!window.supabase) {
-    console.error('Supabase not initialized');
-    return null;
-  }
-  const { data: { user } } = await window.supabase.auth.getUser();
-  return user || null;
+function ensureSupabase() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (window.supabase) resolve();
+      else setTimeout(check, 100); // ตรวจสอบทุก 100ms
+    };
+    check();
+  });
 }
 
+// ใช้ในฟังก์ชันที่ต้องการ Supabase
+async function getCurrentUser() {
+  await ensureSupabase();
+  if (!window.supabase) throw new Error('Supabase not initialized');
+  try {
+    const { data: { user } } = await window.supabase.auth.getUser();
+    return user || null;
+  } catch (err) {
+    console.error('Error getting current user:', err);
+    return null;
+  }
+}
 async function syncUserBehavior(behaviorData) {
   try {
     const formattedData = [];
@@ -2326,12 +2357,17 @@ async function renderAdminProductList() {
    * เมื่อโหลดหน้าเว็บ
    ****************************************************/
   window.onload = async function () {
+  try {
     const user = await getCurrentUser();
     if (user) updateUIAfterLogin(user);
-    renderProducts();
-    renderAIRecommendations();
-    updateCartCount();
-  };
+  } catch (err) {
+    console.warn('User not loaded yet, retrying later:', err);
+    setTimeout(() => window.location.reload(), 5000); // รีโหลดหลัง 5 วินาทีถ้ายังไม่พร้อม
+  }
+  renderProducts();
+  renderAIRecommendations();
+  updateCartCount();
+ };
   
   window.onclick = function (e) {
     const authModal = document.getElementById("authModal");
