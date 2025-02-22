@@ -23,34 +23,51 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// ฟังก์ชันเพื่อรอให้ Supabase พร้อมใช้งาน
+// ฟังก์ชันรอ Supabase
 function ensureSupabase() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error('Supabase not available')), 10000);
     const check = () => {
       if (window.supabase) {
+        clearTimeout(timeout);
         resolve();
       } else {
-        setTimeout(check, 100); // ตรวจสอบทุก 100ms
+        setTimeout(check, 100);
       }
     };
     check();
   });
 }
 
-// ฟังก์ชันดึงข้อมูลผู้ใช้ปัจจุบัน
+// ปรับ getCurrentUser
 async function getCurrentUser() {
-  await ensureSupabase();
-  if (!window.supabase) {
-    console.error('Supabase not initialized');
-    return null;
-  }
   try {
+    await ensureSupabase();
+    if (!window.supabase || !window.supabase.auth) {
+      throw new Error('Supabase not initialized');
+    }
     const { data: { user }, error } = await window.supabase.auth.getUser();
     if (error) throw error;
     return user || null;
   } catch (err) {
     console.error('Error getting current user:', err.message);
     return null;
+  }
+}
+
+// ปรับ loadProducts
+async function loadProducts() {
+  try {
+    await ensureSupabase();
+    if (!window.supabase || !window.supabase.from) {
+      throw new Error('Supabase not initialized');
+    }
+    const { data: products, error } = await window.supabase.from("products").select("*");
+    if (error) throw error;
+    return products || [];
+  } catch (err) {
+    console.error('loadProducts error:', err.message);
+    return [];
   }
 }
 async function syncUserBehavior(behaviorData) {
